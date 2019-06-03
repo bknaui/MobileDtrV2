@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#0288D1</color>
+    <color name="colorPrimaryDark">#01579B</color>
+    <color name="colorAccent">#0091EA</color>
+
+    <color name="location_callibrating">#0097A7</color>
+    <color name="gps_disabled">#BF360C</color>
+    <color name="location_acquired">#33691E</color>
+
+    <color name="timelog_header">#006064</color>
+    <color name="timelog_type">#00A6AE</color>
+    <color name="timelog_dialog">#1B5E20</color>
+
+    <color name="white">#fff</color>
+
+</resources>
