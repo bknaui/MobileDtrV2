@@ -1,4 +1,4 @@
-package com.dohro7.mobiledtrv2.broadcast_receiver;
+package com.dohro7.mobiledtrv2.broadcastreceiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

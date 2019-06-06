@@ -8,8 +8,4 @@ public class DateLog {
 
     public List<TimeLogModel> timeLogModels = new ArrayList<>();
 
-    public DateLog() {
-    }
-
-
 }

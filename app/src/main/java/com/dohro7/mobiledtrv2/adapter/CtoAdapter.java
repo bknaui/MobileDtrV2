@@ -6,10 +6,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.model.CtoModel;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +30,6 @@ public class CtoAdapter extends RecyclerView.Adapter<CtoAdapter.CtoViewHolder> {
         notifyDataSetChanged();
     }
 
-
     @NonNull
     @Override
     public CtoViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
@@ -36,6 +39,7 @@ public class CtoAdapter extends RecyclerView.Adapter<CtoAdapter.CtoViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull CtoViewHolder ctoViewHolder, int i) { //i = position
+        ctoViewHolder.inclusiveDate.setText(list.get(i).inclusive_date);
     }
 
 
@@ -45,10 +49,12 @@ public class CtoAdapter extends RecyclerView.Adapter<CtoAdapter.CtoViewHolder> {
     }
 
     class CtoViewHolder extends RecyclerView.ViewHolder {
-
+        TextView inclusiveDate;
 
         public CtoViewHolder(@NonNull View itemView) {
             super(itemView);
+            inclusiveDate = itemView.findViewById(R.id.cto_date);
         }
+
     }
 }

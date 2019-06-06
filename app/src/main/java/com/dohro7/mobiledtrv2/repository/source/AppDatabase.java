@@ -15,6 +15,7 @@ import com.dohro7.mobiledtrv2.model.TimeLogModel;
 public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase instance;
 
+
     public abstract TimeLogDao timeLogDao();
 
     public abstract OfficeOrderDao officeOrderDao();

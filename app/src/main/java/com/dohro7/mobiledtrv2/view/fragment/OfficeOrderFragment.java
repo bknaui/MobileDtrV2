@@ -1,5 +1,7 @@
 package com.dohro7.mobiledtrv2.view.fragment;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.graphics.Canvas;
 import android.os.Bundle;
 
@@ -13,20 +15,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.adapter.LeaveAdapter;
 import com.dohro7.mobiledtrv2.adapter.OfficeOrderAdapter;
+import com.dohro7.mobiledtrv2.model.LeaveModel;
 import com.dohro7.mobiledtrv2.model.OfficeOrderModel;
+import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.OfficeOrderViewModel;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class OfficeOrderFragment extends Fragment {
@@ -88,12 +99,69 @@ public class OfficeOrderFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.add) {
-            OfficeOrderModel officeOrderModel = new OfficeOrderModel(0, "", "");
-            officeOrderViewModel.insertOfficeOrder(officeOrderModel);
-            Log.e("Insert", "SO");
+            displayAddSoDialog();
         }
         return super.onOptionsItemSelected(item);
     }
 
+    public void displayAddSoDialog() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.dialog_add_so);
+        final EditText dialogSoNo = dialog.findViewById(R.id.dialog_so_no);
+        final TextView dialogSoFrom = dialog.findViewById(R.id.dialog_so_from);
+        final TextView dialogSoTo = dialog.findViewById(R.id.dialog_so_to);
+
+        final Calendar calendarFrom = Calendar.getInstance();
+        final Calendar calendarTo = Calendar.getInstance();
+        dialogSoFrom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dialogSoFrom.setText(year + "/" + DateTimeUtility.twoDigitFormat(month + 1) + "/" + DateTimeUtility.twoDigitFormat(dayOfMonth));
+                        calendarTo.set(year, month, dayOfMonth);
+                        //datePickerDialog.dismiss();
+                    }
+                }, calendarFrom.get(Calendar.YEAR), calendarFrom.get(Calendar.MONTH), calendarFrom.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.show();
+            }
+        });
+
+
+        dialogSoTo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dialogSoTo.setText(year + "/" + DateTimeUtility.twoDigitFormat(month + 1) + "/" + DateTimeUtility.twoDigitFormat(dayOfMonth));
+                        //datePickerDialog.dismiss();
+                    }
+                }, calendarTo.get(Calendar.YEAR), calendarTo.get(Calendar.MONTH), calendarTo.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.getDatePicker().setMinDate(calendarFrom.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+
+        dialog.findViewById(R.id.dialog_add_so_ok).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String so_no = dialogSoNo.getText().toString();
+                String inclusive_date = dialogSoFrom.getText().toString() + " - " + dialogSoTo.getText().toString();
+                OfficeOrderModel officeOrderModel = new OfficeOrderModel(0, so_no, inclusive_date);
+                officeOrderViewModel.insertOfficeOrder(officeOrderModel);
+                dialog.dismiss();
+            }
+        });
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.CENTER;
+        dialog.getWindow().setAttributes(lp);
+        dialog.show();
+    }
 
 }

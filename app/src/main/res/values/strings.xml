@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MobileDTRv2</string>
+    <string-array name="leave_type">
+        <item>SICK LEAVE</item>
+        <item>MATERNITY LEAVE</item>
+    </string-array>
 </resources>

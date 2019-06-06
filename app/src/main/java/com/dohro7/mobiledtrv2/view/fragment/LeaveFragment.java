@@ -1,7 +1,21 @@
 package com.dohro7.mobiledtrv2.view.fragment;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.DatePicker;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,20 +26,14 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.adapter.LeaveAdapter;
 import com.dohro7.mobiledtrv2.model.LeaveModel;
+import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.LeaveViewModel;
 
+import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class LeaveFragment extends Fragment {
@@ -52,9 +60,12 @@ public class LeaveFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.add) {
+            displayAddLeaveDialog();
+            /*
             LeaveModel leaveModel = new LeaveModel(0, "", "");
             leaveViewModel.insertLeave(leaveModel);
             Log.e("Insert", "Leave");
+            */
         }
 
         return super.onOptionsItemSelected(item);
@@ -98,5 +109,65 @@ public class LeaveFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    public void displayAddLeaveDialog() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.dialog_add_leave);
+        final Spinner dialogLeaveType = dialog.findViewById(R.id.dialog_leave_type);
+        final TextView dialogLeaveFrom = dialog.findViewById(R.id.dialog_leave_from);
+        final TextView dialogLeaveTo = dialog.findViewById(R.id.dialog_leave_to);
+
+        final Calendar calendarFrom = Calendar.getInstance();
+        final Calendar calendarTo = Calendar.getInstance();
+        dialogLeaveFrom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dialogLeaveFrom.setText(year + "/" + DateTimeUtility.twoDigitFormat(month + 1) + "/" + DateTimeUtility.twoDigitFormat(dayOfMonth));
+                        calendarTo.set(year, month, dayOfMonth);
+                        //datePickerDialog.dismiss();
+                    }
+                }, calendarFrom.get(Calendar.YEAR), calendarFrom.get(Calendar.MONTH), calendarFrom.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.show();
+            }
+        });
+
+
+        dialogLeaveTo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dialogLeaveTo.setText(year + "/" + DateTimeUtility.twoDigitFormat(month + 1) + "/" + DateTimeUtility.twoDigitFormat(dayOfMonth));
+                        //datePickerDialog.dismiss();
+                    }
+                }, calendarTo.get(Calendar.YEAR), calendarTo.get(Calendar.MONTH), calendarTo.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.getDatePicker().setMinDate(calendarTo.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+
+        dialog.findViewById(R.id.dialog_add_leave_ok).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String type = dialogLeaveType.getSelectedItem().toString();
+                String inclusive_date = dialogLeaveFrom.getText().toString() + " - " + dialogLeaveTo.getText().toString();
+                LeaveModel leaveModel = new LeaveModel(0, type, inclusive_date);
+                leaveViewModel.insertLeave(leaveModel);
+                dialog.dismiss();
+            }
+        });
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.CENTER;
+        dialog.getWindow().setAttributes(lp);
+        dialog.show();
     }
 }

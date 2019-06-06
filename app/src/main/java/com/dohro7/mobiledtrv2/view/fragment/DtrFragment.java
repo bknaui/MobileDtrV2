@@ -3,11 +3,9 @@ package com.dohro7.mobiledtrv2.view.fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -38,7 +36,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.adapter.DtrAdapter;
-import com.dohro7.mobiledtrv2.broadcast_receiver.LocationBroadcastReceiver;
+import com.dohro7.mobiledtrv2.broadcastreceiver.LocationBroadcastReceiver;
 import com.dohro7.mobiledtrv2.model.LocationIdentifier;
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
@@ -72,7 +70,7 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     private DtrAdapter dtrAdapter;
     private MenuItem menuItem;
     private DtrViewModel dtrViewModel;
-    private SharedPreferences sharedPreferences;
+
 
     private LocationBroadcastReceiver locationBroadcastReceiver;
 
@@ -84,8 +82,6 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     private LocationSettingsRequest.Builder locationSettingsBuilder;
     private SettingsClient settingsClient;
 
-    private final String DTR_SHARED_PREF = "dtr_shared_pref";
-
     private String filePath = "";
 
 
@@ -94,7 +90,6 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         dtrViewModel = ViewModelProviders.of(this).get(DtrViewModel.class);
-        sharedPreferences = getContext().getSharedPreferences(DTR_SHARED_PREF, Context.MODE_PRIVATE);
         locationBroadcastReceiver = new LocationBroadcastReceiver(getContext());
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -115,7 +110,9 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
+
                 if (locationResult != null) {
+                    Log.e("Location",locationResult.getLastLocation().getLatitude()+" "+locationResult.getLastLocation().getLongitude());
                     LocationIdentifier locationIdentifier = new LocationIdentifier();
                     locationIdentifier.visible = View.GONE;
                     locationIdentifier.message = "Location/GPS acquired";
@@ -147,22 +144,11 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                 dtrAdapter.setList(timeLogModels);
             }
         });
-        dtrViewModel.getLiveDataMenuTitle().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                menuItem.setTitle(s);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("dtr_status", menuItem.getTitle().toString());
-                editor.putString("dtr_date", DateTimeUtility.getCurrentDate());
-                editor.commit();
-            }
-        });
-
         dtrViewModel.getMutableUndertime().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                Log.e("OK","OK");
                 if (aBoolean.booleanValue()) {
+                    Log.e("OK", "OK");
                     displayDialogUndertime();
                 } else {
                     requestCameraAndStoragePermission();
@@ -197,21 +183,17 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menuItem = menu.findItem(R.id.dtr_time);
-        String menuTitle = sharedPreferences.getString("dtr_status", null);
-        if (menuTitle != null) {
-            String storedDate = sharedPreferences.getString("dtr_date", null);
-            if (!storedDate.equalsIgnoreCase(DateTimeUtility.getCurrentDate())) {
-                dtrViewModel.getLiveDataMenuTitle().setValue("IN");
-                return;
+        dtrViewModel.getLiveDataMenuTitle().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                menuItem.setTitle(s);
             }
-            dtrViewModel.getLiveDataMenuTitle().setValue(menuTitle);
-        }
+        });
+        dtrViewModel.getLiveDataMenuTitle().setValue(dtrViewModel.getLiveDataMenuTitle().getValue());
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.e("CurrentTime", DateTimeUtility.getCurrentTime());
-        Log.e("CurrentDate", DateTimeUtility.getCurrentDate());
         switch (item.getItemId()) {
             //@TODO: Refactor put all business logic into ViewModel
             case R.id.dtr_time:
@@ -255,6 +237,26 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         dialogMessage.setText(message);
 
         dialog.findViewById(R.id.dialog_already_continue).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.CENTER;
+        dialog.getWindow().setAttributes(lp);
+        dialog.show();
+    }
+
+    public void dispayActionCancelledDialog() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.dialog_already_timed);
+
+
+        dialog.findViewById(R.id.dialog_cancelled_ok).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
@@ -326,7 +328,6 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         /*@Todo: not yet implemented*/
         File imageFile = new File(imageFolderFile, "0618_" + imageTimeStamp + ".png");
         filePath = imageFile.getAbsolutePath();
-        Log.e("FIlePath", imageFile.getAbsolutePath());
 
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Uri uriImage = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) ?
@@ -345,19 +346,20 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case 0:
-                Dialog dialog = new Dialog(getContext());
-                dialog.setContentView(R.layout.dialog_timelog_layout);
-                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case 0:
+                    Dialog dialog = new Dialog(getContext());
+                    dialog.setContentView(R.layout.dialog_timelog_layout);
+                    dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-                TextView dialogLogStatus = dialog.findViewById(R.id.dialog_timelog_status);
-                TextView dialogLogTime = dialog.findViewById(R.id.dialog_timelog_time);
+                    TextView dialogLogStatus = dialog.findViewById(R.id.dialog_timelog_status);
+                    TextView dialogLogTime = dialog.findViewById(R.id.dialog_timelog_time);
 
-                String status = menuItem.getTitle().toString();
-                String currentTime = DateTimeUtility.getCurrentTime();
-                dialogLogStatus.setText(status);
-                dialogLogTime.setText(currentTime);
+                    String status = menuItem.getTitle().toString();
+                    String currentTime = DateTimeUtility.getCurrentTime();
+                    dialogLogStatus.setText(status);
+                    dialogLogTime.setText(currentTime);
 
                 /*
                 @note: Uncomment to check if the picture really exists on this path
@@ -371,22 +373,26 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                 }
                 */
 
-                WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-                lp.copyFrom(dialog.getWindow().getAttributes());
-                lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-                lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                lp.gravity = Gravity.CENTER;
-                dialog.getWindow().setAttributes(lp);
-                dialog.show();
+                    WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+                    lp.copyFrom(dialog.getWindow().getAttributes());
+                    lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+                    lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                    lp.gravity = Gravity.CENTER;
+                    dialog.getWindow().setAttributes(lp);
+                    dialog.show();
 
-                TimeLogModel timeLogModel = new TimeLogModel();
-                timeLogModel.id = 0;
-                timeLogModel.date = DateTimeUtility.getCurrentDate();
-                timeLogModel.time = DateTimeUtility.getCurrentTime();
-                timeLogModel.status = status;
-                dtrViewModel.insertTimeLog(timeLogModel);
-                break;
+                    TimeLogModel timeLogModel = new TimeLogModel();
+                    timeLogModel.id = 0;
+                    timeLogModel.date = DateTimeUtility.getCurrentDate();
+                    timeLogModel.time = DateTimeUtility.getCurrentTime();
+                    timeLogModel.status = status;
+                    dtrViewModel.insertTimeLog(timeLogModel);
+                    break;
+            }
+        } else {
+            dispayActionCancelledDialog();
         }
+
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.dohro7.mobiledtrv2.scheduler.DailyTaskScheduler;
 import com.dohro7.mobiledtrv2.view.fragment.SoftwareUpdateFragment;
 import com.google.android.material.navigation.NavigationView;
 
@@ -60,6 +61,8 @@ public class DashboardActivity extends AppCompatActivity implements NavigationVi
 
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.addHeaderView(navigationHeader());
+
+        new DailyTaskScheduler().setAlarm(this);
 
     }
 

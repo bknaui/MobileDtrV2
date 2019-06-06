@@ -5,4 +5,9 @@
         android:id="@+id/add"
         android:title="ADD"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/upload"
+        android:icon="@drawable/ic_upload"
+        android:title="Upload"
+        app:showAsAction="ifRoom" />
 </menu>

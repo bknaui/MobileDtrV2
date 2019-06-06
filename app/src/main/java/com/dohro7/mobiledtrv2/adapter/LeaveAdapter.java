@@ -11,6 +11,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.model.LeaveModel;
 import com.dohro7.mobiledtrv2.model.OfficeOrderModel;
+import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +40,8 @@ public class LeaveAdapter extends RecyclerView.Adapter<LeaveAdapter.LeaveViewHol
 
     @Override
     public void onBindViewHolder(@NonNull LeaveViewHolder officeViewHolder, int i) {
+        officeViewHolder.inclusiveDate.setText(list.get(i).inclusive_date);
+        officeViewHolder.leaveType.setText(list.get(i).type);
     }
 
     @Override
@@ -45,8 +50,13 @@ public class LeaveAdapter extends RecyclerView.Adapter<LeaveAdapter.LeaveViewHol
     }
 
     class LeaveViewHolder extends RecyclerView.ViewHolder {
+        TextView inclusiveDate;
+        TextView leaveType;
+
         public LeaveViewHolder(@NonNull View itemView) {
             super(itemView);
+            inclusiveDate = itemView.findViewById(R.id.leave_date);
+            leaveType = itemView.findViewById(R.id.leave_type);
         }
     }
 }

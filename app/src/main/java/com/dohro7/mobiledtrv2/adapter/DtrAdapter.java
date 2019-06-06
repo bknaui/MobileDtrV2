@@ -77,7 +77,8 @@ public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
                 dtrViewHolder.am_in.setText(timeLogModel.time);
                 continue;
             }
-            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHourTime() < 17) {
+            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHourTime() < 17 &&
+                    dtrViewHolder.am_out.getText().toString().isEmpty() && !dtrViewHolder.am_in.getText().toString().isEmpty()) {
                 dtrViewHolder.am_out.setText(timeLogModel.time);
                 continue;
             }
@@ -87,6 +88,7 @@ public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
             }
             if (timeLogModel.status.equalsIgnoreCase("OUT")) {
                 dtrViewHolder.pm_out.setText(timeLogModel.time);
+                continue;
             }
         }
     }

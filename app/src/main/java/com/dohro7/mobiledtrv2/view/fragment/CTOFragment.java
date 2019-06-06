@@ -1,14 +1,21 @@
 package com.dohro7.mobiledtrv2.view.fragment;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,8 +30,11 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.adapter.CtoAdapter;
 import com.dohro7.mobiledtrv2.model.CtoModel;
+import com.dohro7.mobiledtrv2.model.OfficeOrderModel;
+import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.CtoViewModel;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class CTOFragment extends Fragment {
@@ -33,6 +43,12 @@ public class CTOFragment extends Fragment {
     private CtoAdapter ctoAdapter;
     private CtoViewModel ctoViewModel;
     private RecyclerView.LayoutManager layoutManager;
+    private Observer<List<CtoModel>> observer = new Observer<List<CtoModel>>() {
+        @Override
+        public void onChanged(List<CtoModel> ctoModels) {
+            ctoAdapter.setList(ctoModels);
+        }
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,22 +80,19 @@ public class CTOFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                CtoModel ctoModel = ctoViewModel.getListLiveData().getValue().get(viewHolder.getAdapterPosition());
-                Toast.makeText(getContext(), ctoModel.inclusive_date + " CTO deleted", Toast.LENGTH_SHORT).show();
-                ctoViewModel.deleteCto(ctoModel);
 
+                CtoModel ctoModel = ctoViewModel.getListLiveData().getValue().get(viewHolder.getAdapterPosition());
+                if (ctoModel != null) {
+                    Toast.makeText(getContext(), ctoModel.inclusive_date + " CTO deleted at position" + viewHolder.getAdapterPosition(), Toast.LENGTH_SHORT).show();
+                    ctoViewModel.deleteCto(ctoModel);
+                }
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(ctoAdapter);
 
-        ctoViewModel.getListLiveData().observe(this, new Observer<List<CtoModel>>() {
-            @Override
-            public void onChanged(List<CtoModel> ctoModels) {
-                ctoAdapter.setList(ctoModels);
-            }
-        });
+        ctoViewModel.getListLiveData().observe(this, observer);
         return view;
     }
 
@@ -92,10 +105,72 @@ public class CTOFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.add) {
-            CtoModel ctoModel = new CtoModel(0, "");
-            ctoViewModel.insertCto(ctoModel);
-            Log.e("Insert", "CTO");
+            displayAddCtoDialog();
+            return true;
+        }
+        if (item.getItemId() == R.id.upload) {
+            ctoViewModel.uploadCto();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    public void displayAddCtoDialog() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.dialog_add_cto);
+        final TextView dialogCtoFrom = dialog.findViewById(R.id.dialog_cto_from);
+        final TextView dialogCtoTo = dialog.findViewById(R.id.dialog_cto_to);
+
+        final Calendar calendarFrom = Calendar.getInstance();
+        final Calendar calendarTo = Calendar.getInstance();
+        dialogCtoFrom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dialogCtoFrom.setText(year + "/" + DateTimeUtility.twoDigitFormat(month + 1) + "/" + DateTimeUtility.twoDigitFormat(dayOfMonth));
+                        calendarTo.set(year, month, dayOfMonth);
+                        //datePickerDialog.dismiss();
+                    }
+                }, calendarFrom.get(Calendar.YEAR), calendarFrom.get(Calendar.MONTH), calendarFrom.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.show();
+            }
+        });
+
+
+        dialogCtoTo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dialogCtoTo.setText(year + "/" + DateTimeUtility.twoDigitFormat(month + 1) + "/" + DateTimeUtility.twoDigitFormat(dayOfMonth));
+                        //datePickerDialog.dismiss();
+                    }
+                }, calendarTo.get(Calendar.YEAR), calendarTo.get(Calendar.MONTH), calendarTo.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.getDatePicker().setMinDate(calendarFrom.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+
+        dialog.findViewById(R.id.dialog_add_cto_ok).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String inclusive_date = dialogCtoFrom.getText().toString() + " - " + dialogCtoTo.getText().toString();
+                CtoModel ctoModel = new CtoModel(0, inclusive_date);
+                ctoViewModel.insertCto(ctoModel);
+                dialog.dismiss();
+            }
+        });
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.CENTER;
+        dialog.getWindow().setAttributes(lp);
+        dialog.show();
+    }
+
 }

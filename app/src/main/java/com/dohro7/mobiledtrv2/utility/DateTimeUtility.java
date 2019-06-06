@@ -1,5 +1,6 @@
 package com.dohro7.mobiledtrv2.utility;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -13,11 +14,22 @@ public class DateTimeUtility {
 
     public static String getCurrentDate() {
         Calendar calendar = Calendar.getInstance();
-        String month = getMonthById(calendar.get(Calendar.MONTH)+1);
+        String month = getMonthById(calendar.get(Calendar.MONTH) + 1);
         int day = calendar.get(Calendar.DATE);
         int year = calendar.get(Calendar.YEAR);
 
         return month + " " + day + ", " + year;
+    }
+
+    public static String dateSlashFormatter(String date) {
+        String[] mDate = date.split("-");
+        String from = mDate[0].replace("-", "/");
+        String to = mDate[2].replace("-", "/");
+        return from + "-" + to;
+    }
+
+    public static String twoDigitFormat(int value) {
+        return new DecimalFormat("00").format(value);
     }
 
     public static String getMonthById(int id) {

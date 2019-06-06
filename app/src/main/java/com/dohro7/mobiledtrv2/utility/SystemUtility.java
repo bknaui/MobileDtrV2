@@ -35,14 +35,4 @@ public class SystemUtility {
         return anyLocationProv;
 
     }
-
-    public static void deletePictures() {
-        File file = new File(Environment.getExternalStorageDirectory(), ".MobileDTRv2/Images");
-        if (file.isDirectory()) {
-            String[] files = file.list();
-            for (int i = 0; i < files.length; i++) {
-                new File(file, files[i]).delete();
-            }
-        }
-    }
 }

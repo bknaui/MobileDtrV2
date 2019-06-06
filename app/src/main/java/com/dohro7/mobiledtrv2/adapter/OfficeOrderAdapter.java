@@ -37,7 +37,8 @@ public class OfficeOrderAdapter extends RecyclerView.Adapter<OfficeOrderAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull OfficeViewHolder officeViewHolder, int i) {
-        //officeViewHolder.soItems.setText(list.get(i));
+        officeViewHolder.soNumber.setText("S0# "+list.get(i).so_no);
+        officeViewHolder.inclusiveDate.setText(list.get(i).inclusive_date);
     }
 
     @Override
@@ -46,11 +47,13 @@ public class OfficeOrderAdapter extends RecyclerView.Adapter<OfficeOrderAdapter.
     }
 
     class OfficeViewHolder extends RecyclerView.ViewHolder {
-        TextView soItems;
+        TextView soNumber;
+        TextView inclusiveDate;
 
         public OfficeViewHolder(@NonNull View itemView) {
             super(itemView);
-            //soItems = itemView.findViewById(R.id.office_item);
+            soNumber = itemView.findViewById(R.id.so_no);
+            inclusiveDate = itemView.findViewById(R.id.so_date);
         }
     }
 }
