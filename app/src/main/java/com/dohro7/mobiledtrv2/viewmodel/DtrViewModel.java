@@ -30,6 +30,9 @@ public class DtrViewModel extends AndroidViewModel {
     private MutableLiveData<String> mutableTimeExists;
     private MutableLiveData<Boolean> mutableUndertime;
     private SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferencesUser;
+
+    private final String USER_SHARED_PREF = "user_shared_pref";
     private final String DTR_SHARED_PREF = "dtr_shared_pref";
 
     public DtrViewModel(@NonNull Application application) {
@@ -40,6 +43,7 @@ public class DtrViewModel extends AndroidViewModel {
         mutableTimeExists = new MutableLiveData<>();
         mutableUndertime = new MutableLiveData<>();
         sharedPreferences = application.getSharedPreferences(DTR_SHARED_PREF, application.MODE_PRIVATE);
+        sharedPreferencesUser = application.getSharedPreferences(USER_SHARED_PREF,Context.MODE_PRIVATE);
         mutableLiveMenuTitle.setValue("IN");
         String menuTitle = sharedPreferences.getString("dtr_status", null);
         if (sharedPreferences.getString("dtr_date", null) == null) {
@@ -139,31 +143,75 @@ public class DtrViewModel extends AndroidViewModel {
         return false;
     }
 
-    public void uploadLogs(){
+    public void uploadLogs() {
         try {
             JSONObject jsonObject = new JSONObject();
             JSONArray logs = new JSONArray();
-            for (int i = 0; i < 1; i++) {
+            String userid = sharedPreferencesUser.getString("userid",null);
+            for (int i = 0; i < liveDataList.getValue().size(); i++) {
                 JSONObject logsOject = new JSONObject();
-                logsOject.put("userid", "12");
-                logsOject.put("time", "02:02:02");
-                logsOject.put("event", "IN");
-                logsOject.put("date", "2019-02-02");
+                logsOject.put("userid", userid);
+                logsOject.put("time", liveDataList.getValue().get(i).time);
+                logsOject.put("event", liveDataList.getValue().get(i).status);
+                logsOject.put("date", liveDataList.getValue().get(i).date);
                 logsOject.put("remark", "MOBILE");
                 logsOject.put("edited", "0");
-                logsOject.put("latitude", "1.123");
-                logsOject.put("longitude", "4.567");
-                logsOject.put("filename", "Sample.jpg");
-                logsOject.put("image", "asdkasjdk123asd");
+                logsOject.put("latitude", liveDataList.getValue().get(i).latitude);
+                logsOject.put("longitude", liveDataList.getValue().get(i).longitude);
+                logsOject.put("filename", liveDataList.getValue().get(i).filePath);
+                logsOject.put("image", "asdjkahdasjdhasd");
                 logs.put(logsOject);
             }
 
             jsonObject.put("logs", logs);
-            dtrRepository.uploadLogs(jsonObject);
+           // dtrRepository.uploadLogs(jsonObject);
             Log.e("upload", jsonObject.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
+    public void sample() {
+
+
+        try {
+            JSONObject jsonObject = new JSONObject();
+
+
+            jsonObject.put("name", "Asnaui");
+            jsonObject.put("age", 12);
+
+
+            JSONArray sampletry = new JSONArray();
+
+            JSONObject experience = new JSONObject();
+            experience.put("company", "Payvenue");
+            experience.put("years", 1);
+
+          /*  JSONObject experience1 = new JSONObject();
+            experience.put("company", "Doh7");
+            experience.put("years", 3);
+
+            sampletry.put(experience);
+            sampletry.put(experience1);*/
+
+            jsonObject.put("experience",experience);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }
+
+/*
+{
+  "name":"Asnaui",
+  "age":12,
+  "experience": {"company":"Payvenue","years":1}
+
+}*/
+
+

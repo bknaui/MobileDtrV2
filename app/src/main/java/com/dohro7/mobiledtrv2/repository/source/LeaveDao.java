@@ -21,4 +21,5 @@ public interface LeaveDao {
 
     @Query("SELECT * FROM leave_tbl")
     LiveData<List<LeaveModel>> getLeaves();
+
 }

@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Update;
 
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
 
@@ -18,5 +17,6 @@ public interface TimeLogDao {
 
     @Query("SELECT * from time_log ORDER BY date,time ASC")
     LiveData<List<TimeLogModel>> getAllLogs();
+
 
 }

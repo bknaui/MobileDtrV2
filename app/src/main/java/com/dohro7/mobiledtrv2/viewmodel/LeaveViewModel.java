@@ -31,6 +31,9 @@ public class LeaveViewModel extends AndroidViewModel {
 
     public void deleteLeave(LeaveModel leaveModel) {
         leaveRepository.deleteLeave(leaveModel);
+    }
 
+    public void uploadLeave(){
+        //leaveRepository.uploadLeave(ne);
     }
 }

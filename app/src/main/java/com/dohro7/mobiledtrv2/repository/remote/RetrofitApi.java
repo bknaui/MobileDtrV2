@@ -14,7 +14,7 @@ public interface RetrofitApi {
     Call<String> uploadTimelogs(@Query("data") JSONObject jsonObject);
 
     @POST("/dtr/mobile/add-leave")
-    void uploadLeaves(@Query("userid") String userid, @Query("leave_type") String leave_type, @Query("daterange") String daterange);
+    Call<String> uploadLeaves(@Query("userid") String userid, @Query("leave_type") String leave_type, @Query("daterange") String daterange);
 
     @POST("/dtr/mobile/add-so")
     void uploadOfficeOrder(@Query("userid") String userid, @Query("so") String so, @Query("daterange") String daterange);

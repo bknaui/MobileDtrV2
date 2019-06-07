@@ -6,10 +6,16 @@ import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
 
 import com.dohro7.mobiledtrv2.model.LeaveModel;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
 import com.dohro7.mobiledtrv2.repository.source.AppDatabase;
 import com.dohro7.mobiledtrv2.repository.source.LeaveDao;
 
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LeaveRepository {
     private LeaveDao leaveDao;
@@ -30,6 +36,23 @@ public class LeaveRepository {
 
     public void deleteLeave(LeaveModel leaveModel) {
         new DeleteAsyncTask().execute(leaveModel);
+    }
+
+    public void uploadLeaves()
+    {
+        RetrofitApi retrofitApi = RetrofitClient.getRetrofitApi();
+        Call<String> stringCall = retrofitApi.uploadLeaves("","","");
+        stringCall.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+
+            }
+        });
     }
 
 
