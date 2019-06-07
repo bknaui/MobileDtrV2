@@ -3,15 +3,24 @@ package com.dohro7.mobiledtrv2.repository;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
 import com.dohro7.mobiledtrv2.repository.source.AppDatabase;
 import com.dohro7.mobiledtrv2.repository.source.TimeLogDao;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DtrRepository {
     private LiveData<List<TimeLogModel>> listLiveData;
@@ -24,6 +33,23 @@ public class DtrRepository {
 
     public LiveData<List<TimeLogModel>> getTimeLogs() {
         return listLiveData;
+    }
+
+    public void uploadLogs(JSONObject jsonObject) {
+        RetrofitApi retrofitApi = RetrofitClient.getRetrofitApi();
+        Call<String> callUploadLogs = retrofitApi.uploadTimelogs(jsonObject);
+        callUploadLogs.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                Log.e("Response", response.body()+"OKAY");
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+            Log.e("ERROR",t.getMessage());
+            }
+        });
+
     }
 
     public void insertTimeLog(TimeLogModel timeLogModel) {

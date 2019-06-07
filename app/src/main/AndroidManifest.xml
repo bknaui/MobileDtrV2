@@ -39,7 +39,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.dohro7.mobiledtrv2.provider"
+            android:authorities="com.dohro7.mobiledtrv2.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

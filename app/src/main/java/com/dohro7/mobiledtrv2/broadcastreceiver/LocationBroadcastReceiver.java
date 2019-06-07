@@ -32,6 +32,7 @@ public class LocationBroadcastReceiver extends BroadcastReceiver {
     }
 
     public void updateLocationIdentifier(Context context) {
+        //Determines the location status
         if (SystemUtility.isLocationEnabled(context)) {
             locationIdentifier.colorResource = R.color.location_callibrating;
             locationIdentifier.message = "Location/GPS callibrating";

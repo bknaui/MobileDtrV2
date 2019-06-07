@@ -106,7 +106,7 @@ public class OfficeOrderFragment extends Fragment {
 
     public void displayAddSoDialog() {
         final Dialog dialog = new Dialog(getContext());
-        dialog.setContentView(R.layout.dialog_add_so);
+        dialog.setContentView(R.layout.dialog_add_so_1);
         final EditText dialogSoNo = dialog.findViewById(R.id.dialog_so_no);
         final TextView dialogSoFrom = dialog.findViewById(R.id.dialog_so_from);
         final TextView dialogSoTo = dialog.findViewById(R.id.dialog_so_to);
@@ -144,7 +144,7 @@ public class OfficeOrderFragment extends Fragment {
             }
         });
 
-        dialog.findViewById(R.id.dialog_add_so_ok).setOnClickListener(new View.OnClickListener() {
+        dialog.findViewById(R.id.dialog_btn_add_so).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String so_no = dialogSoNo.getText().toString();

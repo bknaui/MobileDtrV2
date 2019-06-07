@@ -113,7 +113,8 @@ public class LeaveFragment extends Fragment {
 
     public void displayAddLeaveDialog() {
         final Dialog dialog = new Dialog(getContext());
-        dialog.setContentView(R.layout.dialog_add_leave);
+        dialog.setContentView(R.layout.dialog_add_leave_1);
+
         final Spinner dialogLeaveType = dialog.findViewById(R.id.dialog_leave_type);
         final TextView dialogLeaveFrom = dialog.findViewById(R.id.dialog_leave_from);
         final TextView dialogLeaveTo = dialog.findViewById(R.id.dialog_leave_to);
@@ -151,7 +152,7 @@ public class LeaveFragment extends Fragment {
             }
         });
 
-        dialog.findViewById(R.id.dialog_add_leave_ok).setOnClickListener(new View.OnClickListener() {
+        dialog.findViewById(R.id.dialog_btn_add_leave).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String type = dialogLeaveType.getSelectedItem().toString();

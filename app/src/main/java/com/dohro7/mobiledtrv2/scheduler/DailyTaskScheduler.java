@@ -12,7 +12,8 @@ import java.util.Calendar;
 public class DailyTaskScheduler {
 
     public void setAlarm(Context context) {
-        if (Integer.parseInt(DateTimeUtility.getCurrentTime().split(":")[0]) <= 16 && Integer.parseInt(DateTimeUtility.getCurrentTime().split(":")[1]) <= 9) {
+        //Checks if current time is less than 12:45
+        if (Integer.parseInt(DateTimeUtility.getCurrentTime().split(":")[0]) <= 12 && Integer.parseInt(DateTimeUtility.getCurrentTime().split(":")[1]) <= 45) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.HOUR_OF_DAY, 16);

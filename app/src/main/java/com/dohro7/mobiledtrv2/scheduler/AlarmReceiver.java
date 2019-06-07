@@ -8,7 +8,7 @@ import android.util.Log;
 public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-
+        //@TODO: Add notification that it is already 12:45 PM
         Log.e("Alarm","Triggered");
 
     }

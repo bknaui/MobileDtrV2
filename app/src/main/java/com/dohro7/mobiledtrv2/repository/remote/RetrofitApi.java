@@ -10,10 +10,8 @@ import retrofit2.http.Query;
 
 public interface RetrofitApi {
 
-    @POST("/dtr/mobile/add-logs")
-    void uploadTimelogs(@Query("userid") String userid, @Query("time") String time, @Query("event") String event,
-                        @Query("date") String date, @Query("latitude") String latitude, @Query("longitude") String longitude,
-                        @Query("filename") String filename);
+    @POST("/dtr/mobileV2/add-logs")
+    Call<String> uploadTimelogs(@Query("data") JSONObject jsonObject);
 
     @POST("/dtr/mobile/add-leave")
     void uploadLeaves(@Query("userid") String userid, @Query("leave_type") String leave_type, @Query("daterange") String daterange);
@@ -22,7 +20,7 @@ public interface RetrofitApi {
     void uploadOfficeOrder(@Query("userid") String userid, @Query("so") String so, @Query("daterange") String daterange);
 
     @POST("/dtr/mobile/add-cto")
-    Call<String> uploadCto(@Query("cto")JSONObject jsonObject);
+    Call<String> uploadCto(@Query("cto") JSONObject jsonObject);
 
     @POST("/dtr/mobile/login")
     Call<UserModel> login(@Query("imei") String imei);

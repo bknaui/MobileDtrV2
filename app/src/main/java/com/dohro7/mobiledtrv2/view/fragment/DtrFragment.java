@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -57,6 +58,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -112,7 +114,7 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                 super.onLocationResult(locationResult);
 
                 if (locationResult != null) {
-                    Log.e("Location",locationResult.getLastLocation().getLatitude()+" "+locationResult.getLastLocation().getLongitude());
+                    Log.e("Location", locationResult.getLastLocation().getLatitude() + " " + locationResult.getLastLocation().getLongitude());
                     LocationIdentifier locationIdentifier = new LocationIdentifier();
                     locationIdentifier.visible = View.GONE;
                     locationIdentifier.message = "Location/GPS acquired";
@@ -198,6 +200,9 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
             //@TODO: Refactor put all business logic into ViewModel
             case R.id.dtr_time:
                 dtrViewModel.timeValidate();
+                break;
+            case R.id.dtr_upload:
+                dtrViewModel.uploadLogs();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -322,16 +327,22 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
             return;
         }
         String imageTimeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-        File imageFolderFile = new File(getContext().getFilesDir(), "images");
-        if (!imageFolderFile.exists()) imageFolderFile.mkdir();
+        File imageFolderFile = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
 
         /*@Todo: not yet implemented*/
-        File imageFile = new File(imageFolderFile, "0618_" + imageTimeStamp + ".png");
-        filePath = imageFile.getAbsolutePath();
+        File imageFile = null;
+        try {
+            imageFile = File.createTempFile("0618_IMG", ".jpg", imageFolderFile);
+            filePath = imageFile.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Uri uriImage = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) ?
-                FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".provider", imageFile) :
+                FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", imageFile) :
                 Uri.fromFile(imageFile);
 
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriImage);

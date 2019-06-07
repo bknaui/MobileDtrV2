@@ -15,6 +15,10 @@ import com.dohro7.mobiledtrv2.model.TimeLogModel;
 import com.dohro7.mobiledtrv2.repository.DtrRepository;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,5 +137,33 @@ public class DtrViewModel extends AndroidViewModel {
             return true;
         }
         return false;
+    }
+
+    public void uploadLogs(){
+        try {
+            JSONObject jsonObject = new JSONObject();
+            JSONArray logs = new JSONArray();
+            for (int i = 0; i < 1; i++) {
+                JSONObject logsOject = new JSONObject();
+                logsOject.put("userid", "12");
+                logsOject.put("time", "02:02:02");
+                logsOject.put("event", "IN");
+                logsOject.put("date", "2019-02-02");
+                logsOject.put("remark", "MOBILE");
+                logsOject.put("edited", "0");
+                logsOject.put("latitude", "1.123");
+                logsOject.put("longitude", "4.567");
+                logsOject.put("filename", "Sample.jpg");
+                logsOject.put("image", "asdkasjdk123asd");
+                logs.put(logsOject);
+            }
+
+            jsonObject.put("logs", logs);
+            dtrRepository.uploadLogs(jsonObject);
+            Log.e("upload", jsonObject.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

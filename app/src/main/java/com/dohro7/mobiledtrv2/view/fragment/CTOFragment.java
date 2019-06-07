@@ -117,7 +117,7 @@ public class CTOFragment extends Fragment {
 
     public void displayAddCtoDialog() {
         final Dialog dialog = new Dialog(getContext());
-        dialog.setContentView(R.layout.dialog_add_cto);
+        dialog.setContentView(R.layout.dialog_add_cto_1);
         final TextView dialogCtoFrom = dialog.findViewById(R.id.dialog_cto_from);
         final TextView dialogCtoTo = dialog.findViewById(R.id.dialog_cto_to);
 
@@ -154,7 +154,7 @@ public class CTOFragment extends Fragment {
             }
         });
 
-        dialog.findViewById(R.id.dialog_add_cto_ok).setOnClickListener(new View.OnClickListener() {
+        dialog.findViewById(R.id.dialog_btn_add_cto).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String inclusive_date = dialogCtoFrom.getText().toString() + " - " + dialogCtoTo.getText().toString();

@@ -32,7 +32,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         loginViewModel = ViewModelProviders.of(this).get(LoginViewModel.class);
         loginViewModel.getCurrentUser().observe(this, new Observer<UserModel>() {
             @Override
@@ -46,7 +45,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 } else {
                     setContentView(R.layout.login_main);
                     findViewById(R.id.login_btn).setOnClickListener(LoginActivity.this);
-
                 }
             }
         });

@@ -13,12 +13,11 @@
             android:id="@+id/so_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/timelog_header"
-            android:padding="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:padding="10dp"
             android:text="05/05/2019 - 05/12/2019"
-            android:textAppearance="@style/TextAppearance.AppCompat.SearchResult.Subtitle"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="#fff"
-            android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -28,7 +27,7 @@
             android:gravity="center"
             android:padding="15dp"
             android:text="SO# 1234"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textStyle="bold"
             app:layout_constraintTop_toBottomOf="@+id/so_date" />
 
