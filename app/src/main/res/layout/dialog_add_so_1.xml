@@ -9,7 +9,7 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"
+        android:background="@drawable/bg_software_update"
         android:padding="20dp"
         android:text="FILE OFFICE ORDER"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"

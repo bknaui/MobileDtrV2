@@ -2,13 +2,15 @@ package com.dohro7.mobiledtrv2.repository;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
 import com.dohro7.mobiledtrv2.model.CtoModel;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
 import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
-import com.dohro7.mobiledtrv2.repository.source.AppDatabase;
-import com.dohro7.mobiledtrv2.repository.source.CtoDao;
+import com.dohro7.mobiledtrv2.repository.local.AppDatabase;
+import com.dohro7.mobiledtrv2.repository.local.CtoDao;
 
 import org.json.JSONObject;
 
@@ -22,10 +24,12 @@ public class CtoRepository {
 
     private CtoDao ctoDao;
     private LiveData<List<CtoModel>> listLiveData;
+    private RetrofitApi retrofitApi;
 
     public CtoRepository(Context context) {
         this.ctoDao = AppDatabase.getInstance(context).ctoDao();
         this.listLiveData = ctoDao.getCto();
+        retrofitApi = RetrofitClient.getRetrofitApi(context);
     }
 
     public LiveData<List<CtoModel>> getListLiveData() {
@@ -33,7 +37,7 @@ public class CtoRepository {
     }
 
     public void uploadCto(JSONObject jsonObject) {
-        Call<String> uploadCall = RetrofitClient.getRetrofitApi().uploadCto(jsonObject);
+        Call<String> uploadCall = retrofitApi.uploadCto(jsonObject);
         uploadCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -42,7 +46,7 @@ public class CtoRepository {
                     return;
                 }
                 if (response.body().equalsIgnoreCase("1")) {
-                    //Successfully inserted
+                    Log.e("Success","Success");
                 }
 
 

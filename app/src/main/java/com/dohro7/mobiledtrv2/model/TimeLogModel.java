@@ -20,11 +20,16 @@ public class TimeLogModel {
     public String latitude;
     @ColumnInfo(name = "longitude")
     public String longitude;
+    @ColumnInfo(name = "uploaded")
+    public boolean uploaded;
 
     public TimeLogModel() {
     }
 
-    public int getHourTime() {
+    public int getHour() {
         return Integer.parseInt(time.split(":")[0]);
+    }
+    public int getMinutes() {
+        return Integer.parseInt(time.split(":")[1]);
     }
 }

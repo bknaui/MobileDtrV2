@@ -1,4 +1,4 @@
-package com.dohro7.mobiledtrv2.repository.source;
+package com.dohro7.mobiledtrv2.repository.local;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;

@@ -4,6 +4,8 @@ public class LocationIdentifier {
     public String date;
     public String time;
     public String message;
+    public String latitude;
+    public String longitude;
     public int colorResource;
     public int visible;
 

@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -45,7 +46,7 @@ public class OfficeOrderFragment extends Fragment {
     private RecyclerView recyclerView;
     private OfficeOrderViewModel officeOrderViewModel;
     private OfficeOrderAdapter officeOrderAdapter;
-    private RecyclerView.LayoutManager layoutManager;
+    private LinearLayoutManager layoutManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,7 +54,8 @@ public class OfficeOrderFragment extends Fragment {
         setHasOptionsMenu(true);
         officeOrderViewModel = ViewModelProviders.of(this).get(OfficeOrderViewModel.class);
         officeOrderAdapter = new OfficeOrderAdapter();
-        layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setOrientation(RecyclerView.VERTICAL);
     }
 
     @Nullable

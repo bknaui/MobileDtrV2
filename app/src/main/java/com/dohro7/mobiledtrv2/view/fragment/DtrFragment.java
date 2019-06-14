@@ -56,6 +56,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,11 +115,13 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                 super.onLocationResult(locationResult);
 
                 if (locationResult != null) {
-                    Log.e("Location", locationResult.getLastLocation().getLatitude() + " " + locationResult.getLastLocation().getLongitude());
+                    //Log.e("Location", locationResult.getLastLocation().getLatitude() + " " + locationResult.getLastLocation().getLongitude());
                     LocationIdentifier locationIdentifier = new LocationIdentifier();
                     locationIdentifier.visible = View.GONE;
                     locationIdentifier.message = "Location/GPS acquired";
                     locationIdentifier.colorResource = R.color.location_acquired;
+                    locationIdentifier.latitude = locationResult.getLastLocation().getLatitude() + "";
+                    locationIdentifier.longitude = locationResult.getLastLocation().getLongitude() + "";
 
                     locationBroadcastReceiver.getMutableLiveDataLocation().setValue(locationIdentifier);
                 }
@@ -130,7 +133,7 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dtr_fragment_layout, container, false);
+        final View view = inflater.inflate(R.layout.dtr_fragment_layout, container, false);
         recyclerView = view.findViewById(R.id.dtr_recycler_view);
         txtLocationStatus = view.findViewById(R.id.location_status);
         txtLocationDate = view.findViewById(R.id.location_date);
@@ -143,7 +146,11 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         dtrViewModel.getMutableLiveDataList().observe(this, new Observer<List<TimeLogModel>>() {
             @Override
             public void onChanged(List<TimeLogModel> timeLogModels) {
-                dtrAdapter.setList(timeLogModels);
+                if (timeLogModels.size() > 0) {
+                    Log.e("Triggered", "Triggered");
+                    dtrAdapter.setList(timeLogModels);
+                }
+
             }
         });
         dtrViewModel.getMutableUndertime().observe(this, new Observer<Boolean>() {
@@ -162,6 +169,19 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
             @Override
             public void onChanged(String s) {
                 displayAlreadyExistsDialog(s);
+            }
+        });
+        dtrViewModel.getMutableUploadError().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction("RETRY", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dtrViewModel.uploadLogs();
+                    }
+                });
+                snackbar.show();
             }
         });
         locationBroadcastReceiver.getMutableLiveDataLocation().observe(this, new Observer<LocationIdentifier>() {
@@ -197,7 +217,6 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            //@TODO: Refactor put all business logic into ViewModel
             case R.id.dtr_time:
                 dtrViewModel.timeValidate();
                 break;
@@ -258,7 +277,7 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
 
     public void dispayActionCancelledDialog() {
         final Dialog dialog = new Dialog(getContext());
-        dialog.setContentView(R.layout.dialog_already_timed);
+        dialog.setContentView(R.layout.dialog_cancelled_layout);
 
 
         dialog.findViewById(R.id.dialog_cancelled_ok).setOnClickListener(new View.OnClickListener() {
@@ -304,11 +323,8 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            requestPermissions(new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            }, 0);
-            Log.e("FusedApi", "Disabled");
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+
             return;
         }
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
@@ -333,7 +349,7 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         /*@Todo: not yet implemented*/
         File imageFile = null;
         try {
-            imageFile = File.createTempFile("0618_IMG", ".jpg", imageFolderFile);
+            imageFile = File.createTempFile(dtrViewModel.getUser().id, ".jpg", imageFolderFile);
             filePath = imageFile.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
@@ -397,6 +413,9 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                     timeLogModel.date = DateTimeUtility.getCurrentDate();
                     timeLogModel.time = DateTimeUtility.getCurrentTime();
                     timeLogModel.status = status;
+                    timeLogModel.latitude = locationBroadcastReceiver.getMutableLiveDataLocation().getValue().latitude;
+                    timeLogModel.longitude = locationBroadcastReceiver.getMutableLiveDataLocation().getValue().longitude;
+                    timeLogModel.filePath = filePath;
                     dtrViewModel.insertTimeLog(timeLogModel);
                     break;
             }
@@ -409,7 +428,9 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     @Override
     public void onPause() {
         super.onPause();
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        if (locationCallback != null) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
         getContext().unregisterReceiver(locationBroadcastReceiver);
     }
 

@@ -1,4 +1,4 @@
-package com.dohro7.mobiledtrv2.repository.source;
+package com.dohro7.mobiledtrv2.repository.local;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -15,7 +15,7 @@ public interface TimeLogDao {
     @Insert
     void insertLogs(TimeLogModel timeLogModel);
 
-    @Query("SELECT * from time_log ORDER BY date,time ASC")
+    @Query("SELECT * from time_log ORDER BY id ASC")
     LiveData<List<TimeLogModel>> getAllLogs();
 
 

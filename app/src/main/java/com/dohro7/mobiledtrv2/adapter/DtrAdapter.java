@@ -15,6 +15,7 @@ import com.dohro7.mobiledtrv2.model.DateLog;
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
@@ -26,34 +27,34 @@ public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
 
     }
 
+
+    //10:43:16 IN           Date 10
+    //10:39:31 IN 10:40:11  Date 09
+
+    /*
+     * [0] = {"date":"Date 10","timeLogs":[{"time":"10:43:16","status":"IN"}]}
+     *
+     * */
+
     public void setList(List<TimeLogModel> list) {
         dtrLogs.clear();
+        String temp_date = "";
+        for (TimeLogModel timeLogModel : list) {
 
-        DateLog dateLog = new DateLog();
-        for (int i = 0; i < list.size(); i++) {
-            TimeLogModel timeLogModel = list.get(i);
-
-            if (dateLog.date.isEmpty()) {
+            if (!temp_date.equalsIgnoreCase(timeLogModel.date)) {
+                temp_date = timeLogModel.date;
+                DateLog dateLog = new DateLog();
                 dateLog.date = timeLogModel.date;
-                dateLog.timeLogModels.add(timeLogModel);
-                if (i == list.size() - 1) {
-                    dtrLogs.add(dateLog);
+                dtrLogs.add(0, dateLog);
+            }
+        }
+
+        for (int i = 0; i < dtrLogs.size(); i++) {
+            for (int j = 0; j < list.size(); j++) {
+                if (dtrLogs.get(i).date.equalsIgnoreCase(list.get(j).date)) {
+                    dtrLogs.get(i).timeLogModels.add(list.get(j));
                 }
-                continue;
-            }
 
-            if (timeLogModel.date.equalsIgnoreCase(dateLog.date)) {
-                dateLog.timeLogModels.add(timeLogModel);
-            } else {
-                dtrLogs.add(dateLog);
-                dateLog = new DateLog();
-                dateLog.date = timeLogModel.date;
-                dateLog.timeLogModels.add(timeLogModel);
-            }
-
-            if (i == list.size() - 1) {
-                dtrLogs.add(dateLog);
-                continue;
             }
         }
         notifyDataSetChanged();
@@ -68,25 +69,35 @@ public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull DtrViewHolder dtrViewHolder, int position) { //i = position
+        /**
+         TODO: Add color checker
+         If status is uploaded change time color to green
+         If it is undertime change it to red.
+         NOTE: Top priority is the uploaded status.
+         */
         dtrViewHolder.dtr_date.setText(dtrLogs.get(position).date);
+        clearViews(dtrViewHolder);
 
         List<TimeLogModel> list = dtrLogs.get(position).timeLogModels;
-
         for (TimeLogModel timeLogModel : list) {
-            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHourTime() < 12) {
+            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHour() < 12) {
+                if (timeLogModel.getHour() > 7 && timeLogModel.getMinutes() > 0) dtrViewHolder.am_in.setTextColor(Color.RED);
                 dtrViewHolder.am_in.setText(timeLogModel.time);
                 continue;
             }
-            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHourTime() < 17 &&
+            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHour() < 17 &&
                     dtrViewHolder.am_out.getText().toString().isEmpty() && !dtrViewHolder.am_in.getText().toString().isEmpty()) {
+                if (timeLogModel.getHour() < 12) dtrViewHolder.am_out.setTextColor(Color.RED);
                 dtrViewHolder.am_out.setText(timeLogModel.time);
                 continue;
             }
-            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHourTime() > 11) {
+            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHour() > 11) {
+                if (timeLogModel.getHour() > 12 && timeLogModel.getMinutes() > 0) dtrViewHolder.pm_in.setTextColor(Color.RED);
                 dtrViewHolder.pm_in.setText(timeLogModel.time);
                 continue;
             }
             if (timeLogModel.status.equalsIgnoreCase("OUT")) {
+                if (timeLogModel.getHour() < 17) dtrViewHolder.pm_out.setTextColor(Color.RED);
                 dtrViewHolder.pm_out.setText(timeLogModel.time);
                 continue;
             }
@@ -96,6 +107,14 @@ public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
     @Override
     public int getItemCount() {
         return dtrLogs.size();
+    }
+
+    public void clearViews(DtrViewHolder dtrViewHolder) {
+        dtrViewHolder.am_in.setText("");
+        dtrViewHolder.am_out.setText("");
+        dtrViewHolder.pm_in.setText("");
+        dtrViewHolder.pm_out.setText("");
+
     }
 
     class DtrViewHolder extends RecyclerView.ViewHolder {

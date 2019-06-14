@@ -49,17 +49,16 @@ public class CtoViewModel extends AndroidViewModel {
     public void uploadCto() {
         try {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("userid", userid);
-
             JSONArray cto = new JSONArray();
             for (int i = 0; i < 10; i++) {
                 JSONObject daterange = new JSONObject();
+                daterange.put("userid", userid);
                 daterange.put("daterange", "02123123");
                 cto.put(daterange);
             }
 
             jsonObject.put("cto", cto);
-            ctoRepository.uploadCto(jsonObject);
+            //ctoRepository.uploadCto(jsonObject);
             Log.e("upload", jsonObject.toString());
 
         } catch (JSONException e) {

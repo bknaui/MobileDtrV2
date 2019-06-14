@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Canvas;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,13 +22,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.adapter.CtoAdapter;
 import com.dohro7.mobiledtrv2.model.CtoModel;
-import com.dohro7.mobiledtrv2.model.OfficeOrderModel;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.CtoViewModel;
 
@@ -42,13 +40,8 @@ public class CTOFragment extends Fragment {
     private RecyclerView recyclerView;
     private CtoAdapter ctoAdapter;
     private CtoViewModel ctoViewModel;
-    private RecyclerView.LayoutManager layoutManager;
-    private Observer<List<CtoModel>> observer = new Observer<List<CtoModel>>() {
-        @Override
-        public void onChanged(List<CtoModel> ctoModels) {
-            ctoAdapter.setList(ctoModels);
-        }
-    };
+    private LinearLayoutManager layoutManager;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,7 +49,8 @@ public class CTOFragment extends Fragment {
         setHasOptionsMenu(true);
         ctoViewModel = ViewModelProviders.of(this).get(CtoViewModel.class);
         ctoAdapter = new CtoAdapter();
-        layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setOrientation(RecyclerView.VERTICAL);
 
     }
 
@@ -92,7 +86,12 @@ public class CTOFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(ctoAdapter);
 
-        ctoViewModel.getListLiveData().observe(this, observer);
+        ctoViewModel.getListLiveData().observe(this, new Observer<List<CtoModel>>() {
+            @Override
+            public void onChanged(List<CtoModel> ctoModels) {
+                ctoAdapter.setList(ctoModels);
+            }
+        });
         return view;
     }
 

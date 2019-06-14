@@ -19,6 +19,8 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
             android:textColor="#fff"
             android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/guide_line"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView

@@ -1,6 +1,8 @@
 package com.dohro7.mobiledtrv2.utility;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -19,11 +21,20 @@ public class SystemUtility {
     }
 
     public static boolean isTimeAutomatic(Context context) {
+        boolean enabled = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return Settings.Global.getInt(context.getContentResolver(), Settings.Global.AUTO_TIME, 0) == 1;
+            if (Settings.Global.getInt(context.getContentResolver(), Settings.Global.AUTO_TIME_ZONE, 0) == 1 &&
+                    Settings.Global.getInt(context.getContentResolver(), Settings.Global.AUTO_TIME, 0) == 1) {
+                enabled = true;
+            }
+
         } else {
-            return android.provider.Settings.System.getInt(context.getContentResolver(), "auto_time", 0) == 1;
+            if (android.provider.Settings.System.getInt(context.getContentResolver(), "auto_time", 0) == 1 &&
+                    android.provider.Settings.System.getInt(context.getContentResolver(), "auto_time_zone", 0) == 1) {
+                enabled = true;
+            }
         }
+        return enabled;
     }
 
     public static boolean isLocationEnabled(Context context) {
@@ -33,6 +44,16 @@ public class SystemUtility {
         anyLocationProv |= locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
         return anyLocationProv;
+
+    }
+
+    public static String getVersionName(Context context) {
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return e.getMessage();
+        }
 
     }
 }

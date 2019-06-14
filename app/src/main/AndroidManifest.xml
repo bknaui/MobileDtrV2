@@ -33,9 +33,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.activity.DashboardActivity" />
+        <activity android:name=".view.activity.DashboardActivity" android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.SoftwareUpdateActivity"
+            android:screenOrientation="portrait" />
 
         <receiver android:name=".scheduler.AlarmReceiver" />
+        <receiver android:name=".broadcastreceiver.DownloadBroadcastReceiver" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

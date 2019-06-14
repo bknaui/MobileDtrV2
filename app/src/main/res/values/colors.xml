@@ -2,9 +2,9 @@
 <resources>
     <color name="colorPrimary">#0288D1</color>
     <color name="colorPrimaryDark">#01579B</color>
-    <color name="colorAccent">#0091EA</color>
+    <color name="colorAccent">#40C7F4</color>
 
-    <color name="colorButtons">#40C7F4</color>
+    <color name="colorButtons">#0091EA</color>
 
     <color name="location_callibrating">#0097A7</color>
     <color name="gps_disabled">#BF360C</color>
@@ -13,5 +13,6 @@
     <color name="timelog_dialog">#1B5E20</color>
 
     <color name="white">#fff</color>
+    <color name="delete">#E53935</color>
 
 </resources>

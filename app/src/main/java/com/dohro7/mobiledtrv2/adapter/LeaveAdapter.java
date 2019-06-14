@@ -40,7 +40,7 @@ public class LeaveAdapter extends RecyclerView.Adapter<LeaveAdapter.LeaveViewHol
 
     @Override
     public void onBindViewHolder(@NonNull LeaveViewHolder officeViewHolder, int i) {
-        officeViewHolder.inclusiveDate.setText(list.get(i).inclusive_date);
+        officeViewHolder.inclusiveDates.setText(list.get(i).inclusive_date);
         officeViewHolder.leaveType.setText(list.get(i).type);
     }
 
@@ -50,13 +50,13 @@ public class LeaveAdapter extends RecyclerView.Adapter<LeaveAdapter.LeaveViewHol
     }
 
     class LeaveViewHolder extends RecyclerView.ViewHolder {
-        TextView inclusiveDate;
+        TextView inclusiveDates;
         TextView leaveType;
 
         public LeaveViewHolder(@NonNull View itemView) {
             super(itemView);
-            inclusiveDate = itemView.findViewById(R.id.leave_date);
-            leaveType = itemView.findViewById(R.id.leave_type);
+            inclusiveDates = itemView.findViewById(R.id.leave_from_value);
+            leaveType = itemView.findViewById(R.id.leave_type_value);
         }
     }
 }

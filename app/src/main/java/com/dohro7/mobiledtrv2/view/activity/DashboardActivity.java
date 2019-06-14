@@ -1,5 +1,6 @@
 package com.dohro7.mobiledtrv2.view.activity;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -7,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.dohro7.mobiledtrv2.scheduler.DailyTaskScheduler;
-import com.dohro7.mobiledtrv2.view.fragment.SoftwareUpdateFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.fragment.app.FragmentTransaction;
@@ -36,8 +36,6 @@ public class DashboardActivity extends AppCompatActivity implements NavigationVi
     private LeaveFragment leaveFragment = new LeaveFragment();
     private OfficeOrderFragment officeOrderFragment = new OfficeOrderFragment();
     private CTOFragment ctoFragment = new CTOFragment();
-    private SoftwareUpdateFragment softwareUpdateFragment = new SoftwareUpdateFragment();
-
     private FragmentTransaction ft;
 
     @Override
@@ -107,8 +105,12 @@ public class DashboardActivity extends AppCompatActivity implements NavigationVi
                 ft.replace(R.id.dashboard_content, ctoFragment).commit();
                 break;
             case R.id.software_update_menu:
+                Intent softwareUpdateIntent = new Intent(this, SoftwareUpdateActivity.class);
+                startActivity(softwareUpdateIntent);
+                /*
                 toolbar.setTitle("Software Update");
                 ft.replace(R.id.dashboard_content, softwareUpdateFragment).commit();
+                */
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);

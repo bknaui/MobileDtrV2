@@ -1,4 +1,4 @@
-package com.dohro7.mobiledtrv2.repository.source;
+package com.dohro7.mobiledtrv2.repository.local;
 
 import android.content.Context;
 
@@ -14,7 +14,6 @@ import com.dohro7.mobiledtrv2.model.TimeLogModel;
 @Database(entities = {TimeLogModel.class, OfficeOrderModel.class, LeaveModel.class, CtoModel.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase instance;
-
 
     public abstract TimeLogDao timeLogDao();
 

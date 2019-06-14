@@ -8,8 +8,8 @@ import androidx.lifecycle.LiveData;
 import com.dohro7.mobiledtrv2.model.LeaveModel;
 import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
 import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
-import com.dohro7.mobiledtrv2.repository.source.AppDatabase;
-import com.dohro7.mobiledtrv2.repository.source.LeaveDao;
+import com.dohro7.mobiledtrv2.repository.local.AppDatabase;
+import com.dohro7.mobiledtrv2.repository.local.LeaveDao;
 
 import java.util.List;
 
@@ -20,10 +20,12 @@ import retrofit2.Response;
 public class LeaveRepository {
     private LeaveDao leaveDao;
     private LiveData<List<LeaveModel>> listLiveData;
+    private RetrofitApi retrofitApi;
 
     public LeaveRepository(Context context) {
         this.leaveDao = AppDatabase.getInstance(context).leaveDao();
         this.listLiveData = leaveDao.getLeaves();
+        retrofitApi = RetrofitClient.getRetrofitApi(context);
     }
 
     public LiveData<List<LeaveModel>> getListLiveData() {
@@ -40,7 +42,7 @@ public class LeaveRepository {
 
     public void uploadLeaves()
     {
-        RetrofitApi retrofitApi = RetrofitClient.getRetrofitApi();
+
         Call<String> stringCall = retrofitApi.uploadLeaves("","","");
         stringCall.enqueue(new Callback<String>() {
             @Override

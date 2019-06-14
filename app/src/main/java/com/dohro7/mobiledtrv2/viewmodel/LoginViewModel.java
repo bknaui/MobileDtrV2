@@ -13,18 +13,22 @@ import com.dohro7.mobiledtrv2.repository.LoginRepository;
 public class LoginViewModel extends AndroidViewModel {
     private LoginRepository loginRepository;
     private LiveData<UserModel> currentUser;
-    private SharedPreferences sharedPreferences;
+    private LiveData<String> loginErrorMessage;
 
     public LoginViewModel(@NonNull Application application) {
         super(application);
         loginRepository = new LoginRepository(application);
         currentUser = loginRepository.getCurrentUser();
+        loginErrorMessage = loginRepository.getLoginErrorMessage();
     }
 
     public LiveData<UserModel> getCurrentUser() {
         return currentUser;
     }
 
+    public LiveData<String> getLoginErrorMessage() {
+        return loginErrorMessage;
+    }
     public void login(String imei) {
         loginRepository.insertUser(imei);
     }

@@ -1,5 +1,6 @@
 package com.dohro7.mobiledtrv2.repository.remote;
 
+import com.dohro7.mobiledtrv2.model.SoftwareUpdateModel;
 import com.dohro7.mobiledtrv2.model.UserModel;
 
 import org.json.JSONObject;
@@ -24,6 +25,9 @@ public interface RetrofitApi {
 
     @POST("/dtr/mobile/login")
     Call<UserModel> login(@Query("imei") String imei);
+
+    @POST("/dtr/mobile/check-update")
+    Call<SoftwareUpdateModel> checkSoftwareUpdate();
 
 
 }

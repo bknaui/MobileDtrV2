@@ -1,9 +1,6 @@
 package com.dohro7.mobiledtrv2.viewmodel;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Environment;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,14 +9,16 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
+import com.dohro7.mobiledtrv2.model.UserModel;
 import com.dohro7.mobiledtrv2.repository.DtrRepository;
+import com.dohro7.mobiledtrv2.repository.sharedpreference.DtrEventSharedPreference;
+import com.dohro7.mobiledtrv2.repository.sharedpreference.UserSharedPreference;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,11 +28,9 @@ public class DtrViewModel extends AndroidViewModel {
     private LiveData<List<TimeLogModel>> liveDataList;
     private MutableLiveData<String> mutableTimeExists;
     private MutableLiveData<Boolean> mutableUndertime;
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences sharedPreferencesUser;
-
-    private final String USER_SHARED_PREF = "user_shared_pref";
-    private final String DTR_SHARED_PREF = "dtr_shared_pref";
+    private MutableLiveData<String> mutableUploadError;
+    private UserSharedPreference userSharedPreference;
+    private DtrEventSharedPreference dtrEventSharedPreference;
 
     public DtrViewModel(@NonNull Application application) {
         super(application);
@@ -42,19 +39,28 @@ public class DtrViewModel extends AndroidViewModel {
         mutableLiveMenuTitle = new MutableLiveData<>();
         mutableTimeExists = new MutableLiveData<>();
         mutableUndertime = new MutableLiveData<>();
-        sharedPreferences = application.getSharedPreferences(DTR_SHARED_PREF, application.MODE_PRIVATE);
-        sharedPreferencesUser = application.getSharedPreferences(USER_SHARED_PREF,Context.MODE_PRIVATE);
+        mutableUploadError = dtrRepository.getMutableUploadError();
+
+        userSharedPreference = UserSharedPreference.getInstance(application);
+        dtrEventSharedPreference = DtrEventSharedPreference.getInstance(application);
+
         mutableLiveMenuTitle.setValue("IN");
-        String menuTitle = sharedPreferences.getString("dtr_status", null);
-        if (sharedPreferences.getString("dtr_date", null) == null) {
+        String menuTitle = dtrEventSharedPreference.getMenuTitle();
+        if (menuTitle == null) {
             return;
         }
-        if (!sharedPreferences.getString("dtr_date", null).equalsIgnoreCase(DateTimeUtility.getCurrentDate())) {
+        if (!dtrEventSharedPreference.getDtrLastDate().equalsIgnoreCase(DateTimeUtility.getCurrentDate())) {
             return;
         }
-
         if (menuTitle != null) mutableLiveMenuTitle.setValue(menuTitle);
+    }
 
+    public UserModel getUser() {
+        return userSharedPreference.getUserModel();
+    }
+
+    public MutableLiveData<String> getMutableUploadError() {
+        return mutableUploadError;
     }
 
     public MutableLiveData<String> getMutableTimeExists() {
@@ -81,7 +87,7 @@ public class DtrViewModel extends AndroidViewModel {
         List<TimeLogModel> dbList = getLogsByDateAndStatus(timeLogModel.date, timeLogModel.status);
         for (TimeLogModel data : dbList) {
 
-            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHourTime() < 12 && data.getHourTime() < 12) { // AM IN EXISTS
+            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHour() < 12 && data.getHour() < 12) { // AM IN EXISTS
                 mutableTimeExists.setValue("You have already timed IN");
                 return;
             }
@@ -89,15 +95,15 @@ public class DtrViewModel extends AndroidViewModel {
                 mutableUndertime.setValue(true);
                 return;
             }
-            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHourTime() < 17 && data.getHourTime() < 17) { //AM OUT EXISTS
+            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHour() < 17 && data.getHour() < 17) { //AM OUT EXISTS
                 mutableTimeExists.setValue("You have already timed OUT");
                 return;
             }
-            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHourTime() > 11 && data.getHourTime() > 11) { //PM IN EXISTS
+            if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHour() > 11 && data.getHour() > 11) { //PM IN EXISTS
                 mutableTimeExists.setValue("You have already timed IN");
                 return;
             }
-            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHourTime() > 16 && data.getHourTime() > 16) { //PM OUT EXISTS
+            if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHour() > 16 && data.getHour() > 16) { //PM OUT EXISTS
                 mutableTimeExists.setValue("You have already timed OUT");
                 return;
             }
@@ -114,10 +120,7 @@ public class DtrViewModel extends AndroidViewModel {
         if (timeLogModel.status.equalsIgnoreCase("IN")) mutableLiveMenuTitle.setValue("OUT");
         else mutableLiveMenuTitle.setValue("IN");
 
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("dtr_status", mutableLiveMenuTitle.getValue());
-        editor.putString("dtr_date", DateTimeUtility.getCurrentDate());
-        editor.commit();
+        dtrEventSharedPreference.insertUpdateMenuStatus(mutableLiveMenuTitle.getValue(), DateTimeUtility.getCurrentDate());
 
     }
 
@@ -133,9 +136,9 @@ public class DtrViewModel extends AndroidViewModel {
     }
 
     public boolean isUndertime(TimeLogModel timeLogModel) {
-        Log.e("Time", timeLogModel.time);
-        Log.e("Date", timeLogModel.date);
-        Log.e("Status", timeLogModel.date);
+//        Log.e("Time", timeLogModel.time);
+//        Log.e("Date", timeLogModel.date);
+//        Log.e("Status", timeLogModel.date);
         int currentTime = Integer.parseInt(timeLogModel.time.split(":")[0]);
         if (timeLogModel.status.equalsIgnoreCase("OUT") && (currentTime < 12 || currentTime < 17)) { //AM IN
             return true;
@@ -145,73 +148,33 @@ public class DtrViewModel extends AndroidViewModel {
 
     public void uploadLogs() {
         try {
-            JSONObject jsonObject = new JSONObject();
+            JSONObject data = new JSONObject();
             JSONArray logs = new JSONArray();
-            String userid = sharedPreferencesUser.getString("userid",null);
+
             for (int i = 0; i < liveDataList.getValue().size(); i++) {
-                JSONObject logsOject = new JSONObject();
-                logsOject.put("userid", userid);
-                logsOject.put("time", liveDataList.getValue().get(i).time);
-                logsOject.put("event", liveDataList.getValue().get(i).status);
-                logsOject.put("date", liveDataList.getValue().get(i).date);
-                logsOject.put("remark", "MOBILE");
-                logsOject.put("edited", "0");
-                logsOject.put("latitude", liveDataList.getValue().get(i).latitude);
-                logsOject.put("longitude", liveDataList.getValue().get(i).longitude);
-                logsOject.put("filename", liveDataList.getValue().get(i).filePath);
-                logsOject.put("image", "asdjkahdasjdhasd");
-                logs.put(logsOject);
+
+                JSONObject timeLogs = new JSONObject();
+                timeLogs.put("userid", userSharedPreference.getUserModel().id);
+                timeLogs.put("time", liveDataList.getValue().get(i).time);
+                timeLogs.put("event", liveDataList.getValue().get(i).status);
+                timeLogs.put("date", liveDataList.getValue().get(i).date);
+                timeLogs.put("remark", "MOBILE");
+                timeLogs.put("edited", "0");
+                timeLogs.put("latitude", liveDataList.getValue().get(i).latitude + "");
+                timeLogs.put("longitude", liveDataList.getValue().get(i).longitude + "");
+                timeLogs.put("filename", liveDataList.getValue().get(i).filePath + "");
+                timeLogs.put("image", liveDataList.getValue().get(i).filePath + "");
+                logs.put(timeLogs);
             }
 
-            jsonObject.put("logs", logs);
-           // dtrRepository.uploadLogs(jsonObject);
-            Log.e("upload", jsonObject.toString());
+            data.put("logs", logs);
+            //dtrRepository.uploadLogs(data);
+            Log.e("upload", data.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sample() {
-
-
-        try {
-            JSONObject jsonObject = new JSONObject();
-
-
-            jsonObject.put("name", "Asnaui");
-            jsonObject.put("age", 12);
-
-
-            JSONArray sampletry = new JSONArray();
-
-            JSONObject experience = new JSONObject();
-            experience.put("company", "Payvenue");
-            experience.put("years", 1);
-
-          /*  JSONObject experience1 = new JSONObject();
-            experience.put("company", "Doh7");
-            experience.put("years", 3);
-
-            sampletry.put(experience);
-            sampletry.put(experience1);*/
-
-            jsonObject.put("experience",experience);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
     }
 }
-
-/*
-{
-  "name":"Asnaui",
-  "age":12,
-  "experience": {"company":"Payvenue","years":1}
-
-}*/
 
 
