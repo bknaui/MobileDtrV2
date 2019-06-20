@@ -2,21 +2,20 @@ package com.dohro7.mobiledtrv2.repository;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
-import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
-import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
+import com.dohro7.mobiledtrv2.model.UploadResponse;
 import com.dohro7.mobiledtrv2.repository.local.AppDatabase;
 import com.dohro7.mobiledtrv2.repository.local.TimeLogDao;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
+import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
 
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -26,19 +25,21 @@ import retrofit2.Response;
 
 public class DtrRepository {
     private LiveData<List<TimeLogModel>> listLiveData;
-    private MutableLiveData<String> mutableUploadError;
     private TimeLogDao timeLogDao;
     private RetrofitApi retrofitApi;
+    private MutableLiveData<String> uploadMessage = new MutableLiveData<>();
+    private Context context;
 
     public DtrRepository(Context context) {
+        this.context = context;
         timeLogDao = AppDatabase.getInstance(context).timeLogDao();
         listLiveData = timeLogDao.getAllLogs();
-        mutableUploadError = new MutableLiveData<>();
         retrofitApi = RetrofitClient.getRetrofitApi(context);
+
     }
 
-    public MutableLiveData<String> getMutableUploadError() {
-        return mutableUploadError;
+    public MutableLiveData<String> getUploadMessage() {
+        return uploadMessage;
     }
 
     public LiveData<List<TimeLogModel>> getTimeLogs() {
@@ -47,20 +48,26 @@ public class DtrRepository {
 
     public void uploadLogs(JSONObject jsonObject) {
 
-        Call<String> callUploadLogs = retrofitApi.uploadTimelogs(jsonObject);
-        callUploadLogs.enqueue(new Callback<String>() {
+        Call<UploadResponse> callUploadLogs = retrofitApi.uploadTimelogs(jsonObject);
+        callUploadLogs.enqueue(new Callback<UploadResponse>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                Log.e("Response", response.body() + "OKAY");
-
+            public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
+                UploadResponse uploadResponse = response.body();
+                if (uploadResponse.code == 200) {
+                    Log.e("Message", response.body().response);
+                    uploadMessage.setValue(response.body().response);
+                    new UploadAsyncTask().execute();
+                    return;
+                }
+                uploadMessage.setValue("Something went wrong, please contact system administrator");
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<UploadResponse> call, Throwable t) {
                 if (t instanceof IOException) {
-                    mutableUploadError.setValue("No network connection");
+                    uploadMessage.setValue("No network connection");
                 } else {
-                    mutableUploadError.setValue(t.getMessage());
+                    uploadMessage.setValue(t.getMessage());
                 }
 
             }
@@ -68,14 +75,34 @@ public class DtrRepository {
 
     }
 
+
     public void insertTimeLog(TimeLogModel timeLogModel) {
         new InsertAsyncTask().execute(timeLogModel);
     }
 
-    public void deleteImages() {
-        new DeleteAsyncTask().execute();
-    }
+    class UploadAsyncTask extends AsyncTask<Void, Void, Void> {
 
+        @Override
+        protected Void doInBackground(Void... voids) {
+            timeLogDao.uploadLogs();
+//            File screenshot = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Screenshot");
+//            if (screenshot.isDirectory()) {
+//                String[] files = screenshot.list();
+//                for (int i = 0; i < files.length; i++) {
+//                    new File(screenshot, files[i]).delete();
+//                }
+//            }
+//
+//            File timelog = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Timelogs");
+//            if (timelog.isDirectory()) {
+//                String[] files = timelog.list();
+//                for (int i = 0; i < files.length; i++) {
+//                    new File(timelog, files[i]).delete();
+//                }
+//            }
+            return null;
+        }
+    }
 
     class InsertAsyncTask extends AsyncTask<TimeLogModel, Void, Void> {
 
@@ -85,20 +112,4 @@ public class DtrRepository {
             return null;
         }
     }
-
-    class DeleteAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            File file = new File(Environment.getExternalStorageDirectory(), ".MobileDTRv2/Images");
-            if (file.isDirectory()) {
-                String[] files = file.list();
-                for (int i = 0; i < files.length; i++) {
-                    new File(file, files[i]).delete();
-                }
-            }
-            return null;
-        }
-    }
-
 }

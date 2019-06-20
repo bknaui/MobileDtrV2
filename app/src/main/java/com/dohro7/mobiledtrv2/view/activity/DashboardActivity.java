@@ -1,6 +1,8 @@
 package com.dohro7.mobiledtrv2.view.activity;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -8,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.dohro7.mobiledtrv2.scheduler.DailyTaskScheduler;
+import com.dohro7.mobiledtrv2.utility.BitmapDecoder;
+import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.fragment.app.FragmentTransaction;
@@ -16,15 +20,25 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.view.fragment.CTOFragment;
 import com.dohro7.mobiledtrv2.view.fragment.DtrFragment;
 import com.dohro7.mobiledtrv2.view.fragment.LeaveFragment;
 import com.dohro7.mobiledtrv2.view.fragment.OfficeOrderFragment;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class DashboardActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -37,6 +51,28 @@ public class DashboardActivity extends AppCompatActivity implements NavigationVi
     private OfficeOrderFragment officeOrderFragment = new OfficeOrderFragment();
     private CTOFragment ctoFragment = new CTOFragment();
     private FragmentTransaction ft;
+
+
+//Uncomment if you want to perform screen shot
+    @Override
+    public void onBackPressed() {
+        File screenShotFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Screenshot");
+        Bitmap bitmap = BitmapDecoder.screenShotView(this);
+        String fileName = "screenshot_drawer.jpg";
+        File imageFolderFile = new File(screenShotFile, fileName);
+        imageFolderFile.getParentFile().mkdirs();
+        try {
+            OutputStream fout = new FileOutputStream(imageFolderFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout);
+            fout.flush();
+            fout.close();
+        } catch (FileNotFoundException e) {
+            Log.e("FNOE", e.getMessage());
+        } catch (IOException e) {
+            Log.e("IOE", e.getMessage());
+        }
+        Toast.makeText(this, "Screen captured", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +102,8 @@ public class DashboardActivity extends AppCompatActivity implements NavigationVi
 
     public View navigationHeader() {
         View view = LayoutInflater.from(this).inflate(R.layout.user_layout, null, false);
+        TextView username = view.findViewById(R.id.user_name);
+        //username.setText();
         return view;
     }
 

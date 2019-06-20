@@ -3,7 +3,8 @@
     <external-path
         name="my_images"
         path="Android/data/com.dohro7.mobiledtrv2/files/Pictures" />
-    <files-path
-        name="Download"
-        path="Download/" />
+
+    <external-path
+        name="my_aok"
+        path="Android/data/com.dohro7.mobiledtrv2/files/Download" />
 </paths>

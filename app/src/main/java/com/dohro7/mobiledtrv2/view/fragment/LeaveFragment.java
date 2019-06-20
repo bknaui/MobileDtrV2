@@ -12,8 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +35,7 @@ import com.dohro7.mobiledtrv2.adapter.LeaveAdapter;
 import com.dohro7.mobiledtrv2.model.LeaveModel;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.LeaveViewModel;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -61,13 +65,8 @@ public class LeaveFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.add) {
-            displayAddLeaveDialog();
-            /*
-            LeaveModel leaveModel = new LeaveModel(0, "", "");
-            leaveViewModel.insertLeave(leaveModel);
-            Log.e("Insert", "Leave");
-            */
+        if (item.getItemId() == R.id.upload) {
+            leaveViewModel.uploadLeave();
         }
 
         return super.onOptionsItemSelected(item);
@@ -76,9 +75,11 @@ public class LeaveFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.leave_fragment_layout, container, false);
+        final View view = inflater.inflate(R.layout.leave_fragment_layout, container, false);
         recyclerView = view.findViewById(R.id.leave_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -104,10 +105,37 @@ public class LeaveFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(leaveAdapter);
 
+        view.findViewById(R.id.fab_leave).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayAddLeaveDialog();
+            }
+        });
+
         leaveViewModel.getListLiveData().observe(this, new Observer<List<LeaveModel>>() {
             @Override
             public void onChanged(List<LeaveModel> leaveModels) {
                 leaveAdapter.setList(leaveModels);
+            }
+        });
+        leaveViewModel.getMutableUploadError().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                if (!s.equalsIgnoreCase("Successfully uploaded") && !s.equalsIgnoreCase("Nothing to upload")) {
+                    Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setAction("RETRY", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            leaveViewModel.uploadLeave();
+                        }
+                    });
+                    snackbar.show();
+                    return;
+                }
+
+                Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_SHORT);
+                snackbar.setText(s);
+                snackbar.show();
             }
         });
         return view;
@@ -120,6 +148,11 @@ public class LeaveFragment extends Fragment {
         final Spinner dialogLeaveType = dialog.findViewById(R.id.dialog_leave_type);
         final TextView dialogLeaveFrom = dialog.findViewById(R.id.dialog_leave_from);
         final TextView dialogLeaveTo = dialog.findViewById(R.id.dialog_leave_to);
+
+        ArrayAdapter spinnerAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_item_layout);
+        String[] leaveArray = getContext().getResources().getStringArray(R.array.leave_type);
+        spinnerAdapter.addAll(leaveArray);
+        dialogLeaveType.setAdapter(spinnerAdapter);
 
         final Calendar calendarFrom = Calendar.getInstance();
         final Calendar calendarTo = Calendar.getInstance();

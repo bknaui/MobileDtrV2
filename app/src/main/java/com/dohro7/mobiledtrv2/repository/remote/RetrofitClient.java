@@ -23,7 +23,6 @@ public class RetrofitClient {
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create(gson))
-                    .addConverterFactory(new NullConverter())
                     .build();
 
             retrofitApi = retrofit.create(RetrofitApi.class);

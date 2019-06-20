@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -24,9 +26,16 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.model.UserModel;
+import com.dohro7.mobiledtrv2.utility.BitmapDecoder;
 import com.dohro7.mobiledtrv2.viewmodel.LoginViewModel;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -43,6 +52,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         loginViewModel.getCurrentUser().observe(this, new Observer<UserModel>() {
             @Override
             public void onChanged(UserModel userModel) {
+                Log.e("Triggered","Tr");
                 if (userModel != null) {
                     Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                     startActivity(intent);
@@ -91,7 +101,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             imei = telephonyManager.getDeviceId();
         }
         Log.e("IMEI", imei);
-        //imei = "359447098842222";
+        imei = "357609081416965";
         loginViewModel.login(imei);
     }
 
@@ -100,6 +110,28 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         login();
     }
+
+    //Uncomment if you want to perform screen shot
+    /*@Override
+    public void onBackPressed() {
+        File screenShotFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Screenshot");
+        Bitmap bitmap = BitmapDecoder.screenShotView(this);
+        String fileName = "screenshot_login.jpg";
+        File imageFolderFile = new File(screenShotFile, fileName);
+        imageFolderFile.getParentFile().mkdirs();
+        try {
+            OutputStream fout = new FileOutputStream(imageFolderFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout);
+            fout.flush();
+            fout.close();
+        } catch (FileNotFoundException e) {
+            Log.e("FNOE", e.getMessage());
+        } catch (IOException e) {
+            Log.e("IOE", e.getMessage());
+        }
+        Toast.makeText(this, "Screen captured", Toast.LENGTH_SHORT).show();
+    }
+    */
 
     @Override
     public void onClick(View v) {

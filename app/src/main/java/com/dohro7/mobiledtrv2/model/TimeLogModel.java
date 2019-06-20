@@ -16,12 +16,14 @@ public class TimeLogModel {
     public String status;
     @ColumnInfo(name = "filePath")
     public String filePath;
+    @ColumnInfo(name = "filename")
+    public String fileName;
     @ColumnInfo(name = "latitude")
     public String latitude;
     @ColumnInfo(name = "longitude")
     public String longitude;
     @ColumnInfo(name = "uploaded")
-    public boolean uploaded;
+    public int uploaded;
 
     public TimeLogModel() {
     }

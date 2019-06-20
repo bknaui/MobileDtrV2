@@ -14,12 +14,32 @@ public class DateTimeUtility {
 
     public static String getCurrentDate() {
         Calendar calendar = Calendar.getInstance();
-        String month = getMonthById(calendar.get(Calendar.MONTH) + 1);
+        int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DATE);
         int year = calendar.get(Calendar.YEAR);
 
-        return month + " " + day + ", " + year;
+        return year + "-" + new DecimalFormat("00").format(month) + "-" + new DecimalFormat("00").format(day);
     }
+
+    public static String getFilenameDate(String userid) {
+        Calendar calendar = Calendar.getInstance();
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DATE);
+        int year = calendar.get(Calendar.YEAR);
+        int hour = calendar.get(Calendar.HOUR);
+        int minutes = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        int milliseconds = calendar.get(Calendar.MILLISECOND);
+
+        return year + "" + new DecimalFormat("00").format(month) + ""
+                + new DecimalFormat("00").format(day) + "" + new DecimalFormat("00").format(minutes) + "" + new DecimalFormat("00").format(hour)
+                + "" + new DecimalFormat("00").format(second) + "" + new DecimalFormat("00").format(milliseconds) + "" + userid;
+    }
+
+    public static String getCurrentDateString(int year, int month, int day) {
+        return getMonthById(month) + " " + day + ", " + year;
+    }
+
 
     public static String dateSlashFormatter(String date) {
         String[] mDate = date.split("-");

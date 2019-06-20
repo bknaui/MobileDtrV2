@@ -19,6 +19,9 @@ public interface LeaveDao {
     @Delete
     void deleteLeave(LeaveModel leaveModel);
 
+    @Query("DELETE FROM leave_tbl")
+    void deleteAllLeave();
+
     @Query("SELECT * FROM leave_tbl")
     LiveData<List<LeaveModel>> getLeaves();
 

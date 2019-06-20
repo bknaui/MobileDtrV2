@@ -3,6 +3,7 @@
     <color name="colorPrimary">#0288D1</color>
     <color name="colorPrimaryDark">#01579B</color>
     <color name="colorAccent">#40C7F4</color>
+    <color name="colorFab">#FF0266</color>
 
     <color name="colorButtons">#0091EA</color>
 
@@ -14,5 +15,8 @@
 
     <color name="white">#fff</color>
     <color name="delete">#E53935</color>
+
+    <color name="disable_header">#616161</color>
+    <color name="disable_subheader">#9E9E9E</color>
 
 </resources>

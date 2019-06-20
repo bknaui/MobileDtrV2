@@ -1,6 +1,8 @@
 package com.dohro7.mobiledtrv2.adapter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
@@ -26,8 +28,12 @@ public class CtoAdapter extends RecyclerView.Adapter<CtoAdapter.CtoViewHolder> {
     }
 
     public void setList(List<CtoModel> list) {
-        this.list = list;
-        notifyDataSetChanged();
+        final CtoDiffUtilCallback diffCallback = new CtoDiffUtilCallback(this.list, list);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+
+        this.list.clear();
+        this.list.addAll(list);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -54,6 +60,49 @@ public class CtoAdapter extends RecyclerView.Adapter<CtoAdapter.CtoViewHolder> {
         public CtoViewHolder(@NonNull View itemView) {
             super(itemView);
             inclusiveDate = itemView.findViewById(R.id.cto_date);
+        }
+
+    }
+
+    class CtoDiffUtilCallback extends DiffUtil.Callback {
+
+        private final List<CtoModel> oldList;
+        private final List<CtoModel> newList;
+
+        public CtoDiffUtilCallback(List<CtoModel> oldList, List<CtoModel> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldList.get(oldItemPosition).id == newList.get(newItemPosition).id;
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            final CtoModel oldData = oldList.get(oldItemPosition);
+            final CtoModel newData = newList.get(newItemPosition);
+
+            return oldData.id == newData.id;
+        }
+
+        @Nullable
+        @Override
+        public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+            // Implement method if you're going to use ItemAnimator
+            notifyItemInserted(newItemPosition);
+            return super.getChangePayload(oldItemPosition, newItemPosition);
         }
 
     }

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +38,7 @@ import com.dohro7.mobiledtrv2.model.LeaveModel;
 import com.dohro7.mobiledtrv2.model.OfficeOrderModel;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.OfficeOrderViewModel;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Calendar;
 import java.util.List;
@@ -61,9 +63,12 @@ public class OfficeOrderFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.so_fragment_layout, container, false);
+        final View view = inflater.inflate(R.layout.so_fragment_layout, container, false);
         recyclerView = view.findViewById(R.id.office_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
             @Override
@@ -83,12 +88,41 @@ public class OfficeOrderFragment extends Fragment {
         itemTouchHelper.attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(officeOrderAdapter);
 
+        view.findViewById(R.id.fab_so).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayAddSoDialog();
+            }
+        });
+
         officeOrderViewModel.getListLiveData().observe(this, new Observer<List<OfficeOrderModel>>() {
             @Override
             public void onChanged(List<OfficeOrderModel> officeOrderModels) {
                 officeOrderAdapter.setList(officeOrderModels);
             }
         });
+
+        officeOrderViewModel.getMutableUploadError().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                if (!s.equalsIgnoreCase("Successfully uploaded") && !s.equalsIgnoreCase("Nothing to upload")) {
+                    Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setAction("RETRY", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            officeOrderViewModel.uploadLogs();
+                        }
+                    });
+                    snackbar.show();
+                    return;
+                }
+
+                Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_SHORT);
+                snackbar.setText(s);
+                snackbar.show();
+            }
+        });
+
         return view;
     }
 
@@ -100,8 +134,8 @@ public class OfficeOrderFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.add) {
-            displayAddSoDialog();
+        if (item.getItemId() == R.id.upload) {
+            officeOrderViewModel.uploadLogs();
         }
         return super.onOptionsItemSelected(item);
     }

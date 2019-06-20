@@ -6,10 +6,13 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.dohro7.mobiledtrv2.model.ResponseBody;
+import com.dohro7.mobiledtrv2.model.RetrofitMessage;
 import com.dohro7.mobiledtrv2.model.UserModel;
 import com.dohro7.mobiledtrv2.repository.remote.RetrofitApi;
 import com.dohro7.mobiledtrv2.repository.remote.RetrofitClient;
 import com.dohro7.mobiledtrv2.repository.sharedpreference.UserSharedPreference;
+import com.google.gson.Gson;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -19,16 +22,13 @@ public class LoginRepository {
     private MutableLiveData<UserModel> currentUser;
     private UserSharedPreference userSharedPreference;
     private MutableLiveData<String> loginErrorMessage;
-    private UserModel userModel;
     private RetrofitApi retrofitApi;
 
     public LoginRepository(Context context) {
-        userSharedPreference = UserSharedPreference.getInstance(context);
-        userModel = userSharedPreference.getUserModel();
-        currentUser = new MutableLiveData<>();
+        userSharedPreference = UserSharedPreference.getInstance(context); //if naay UserSharedPreference?! else create
+        currentUser = userSharedPreference.getUserModel();
         loginErrorMessage = new MutableLiveData<>();
         retrofitApi = RetrofitClient.getRetrofitApi(context);
-        currentUser.setValue(userModel);
     }
 
     public LiveData<UserModel> getCurrentUser() {
@@ -40,36 +40,36 @@ public class LoginRepository {
     }
 
     public void insertUser(String imei) {
-        UserModel userModel = new UserModel("123","asd","asd");
-        userSharedPreference.insertUser(userModel);
-        currentUser.setValue(userModel);
-        /*Call<UserModel> userViewModelCall = retrofitApi.login(imei);
-        userViewModelCall.enqueue(new Callback<UserModel>() {
+
+        Call<ResponseBody> userViewModelCall = retrofitApi.login(imei);
+        userViewModelCall.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<UserModel> call, Response<UserModel> response) {
-                if(!response.isSuccessful()){
-                    if(response.code() == 500)
-                        loginErrorMessage.setValue("Server error, please contact system administrator");
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                ResponseBody responseBody = response.body();
+                Log.e("Response", responseBody.code + "");
+                if (responseBody.code == 200) {
+                    userSharedPreference.insertUser(responseBody.response);
+                    currentUser.setValue(responseBody.response);
                     return;
                 }
-
-                UserModel userModel = response.body();
-                if (userModel == null) {
-                    //User not registered
+                if (responseBody.code == 201) {
                     loginErrorMessage.setValue("IMEI not registered");
                     return;
                 }
-                userSharedPreference.insertUser(userModel);
-                currentUser.setValue(userModel);
+                if (response.code() == 500 || responseBody.code == 500) {
+                    loginErrorMessage.setValue("Server error, please contact system administrator");
+                    return;
+                }
+
             }
 
             @Override
-            public void onFailure(Call<UserModel> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 loginErrorMessage.setValue(t.getMessage());
                 Log.e("onFailure", t.getMessage());
             }
         });
-        */
+
     }
 
 }

@@ -18,8 +18,8 @@ public class LoginViewModel extends AndroidViewModel {
     public LoginViewModel(@NonNull Application application) {
         super(application);
         loginRepository = new LoginRepository(application);
-        currentUser = loginRepository.getCurrentUser();
         loginErrorMessage = loginRepository.getLoginErrorMessage();
+        currentUser = loginRepository.getCurrentUser();
     }
 
     public LiveData<UserModel> getCurrentUser() {

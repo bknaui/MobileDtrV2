@@ -4,7 +4,6 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
@@ -26,6 +25,7 @@ public class SoftwareUpdateRepository {
     private DownloadManager downloadManager;
     private long id;
     private Handler handler = new Handler();
+    private File apkFile;
     private Runnable downloadRunnable = new Runnable() {
         @Override
         public void run() {
@@ -44,7 +44,7 @@ public class SoftwareUpdateRepository {
                 if (size != -1) progress = downloaded * 100.0 / size;
                 mutableDownloadPercentage.setValue(progress);
 
-                Log.e("Progress", progress + " "+downloadedIndex);
+                Log.e("Progress", progress + " " + downloadedIndex);
                 if (c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS)) != DownloadManager.STATUS_SUCCESSFUL) {
                     handler.postDelayed(this, 2000);
                 }
@@ -60,6 +60,7 @@ public class SoftwareUpdateRepository {
         versionName = SystemUtility.getVersionName(context);
         mutableDownloadPercentage = new MutableLiveData<>();
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        apkFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "Apk");
     }
 
     public MutableLiveData<Double> getMutableDownloadPercentage() {
@@ -71,7 +72,7 @@ public class SoftwareUpdateRepository {
     }
 
     public void downloadApkFromServer() {
-        File file = new File(Environment.getExternalStorageDirectory(), "MobileDtr/dtr.apk");
+        File file = new File(apkFile, "dtr.apk");
 
         Uri apkUri = Uri.fromFile(file);
 
@@ -89,8 +90,17 @@ public class SoftwareUpdateRepository {
     }
 
     public void checkSoftwareUpdate() {
-        SoftwareUpdateModel softwareUpdateModel = new SoftwareUpdateModel("1.0.0", "1. Daily alarm notification every 12:45 AM\n\n2. More user friendly UI Design");
-        mutableSoftwareModel.setValue(softwareUpdateModel);/*
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SoftwareUpdateModel softwareUpdateModel = new SoftwareUpdateModel("1.0.0", "1. Daily alarm notification every 12:45 AM\n\n2. More user friendly UI Design");
+                mutableSoftwareModel.setValue(null);
+            }
+        }, 5000);
+
+
+        /* Uncomment to perform http request
         Call<SoftwareUpdateModel> softwareUpdateModelCall = retrofitApi.checkSoftwareUpdate();
         softwareUpdateModelCall.enqueue(new Callback<SoftwareUpdateModel>() {
             @Override

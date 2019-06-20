@@ -2,7 +2,6 @@ package com.dohro7.mobiledtrv2.model;
 
 import com.google.gson.annotations.SerializedName;
 
-
 public class UserModel {
     @SerializedName("userid")
     public String id;

@@ -24,6 +24,7 @@
         android:id="@+id/software_update_updated_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/software_update_title">
@@ -150,7 +151,6 @@
         android:id="@+id/software_update_progress_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         app:constraint_referenced_ids="software_update_progressbar,software_update_progress_text" />
 
 

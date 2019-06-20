@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import com.dohro7.mobiledtrv2.adapter.DtrAdapter;
 import com.dohro7.mobiledtrv2.broadcastreceiver.LocationBroadcastReceiver;
 import com.dohro7.mobiledtrv2.model.LocationIdentifier;
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
+import com.dohro7.mobiledtrv2.utility.BitmapDecoder;
 import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 import com.dohro7.mobiledtrv2.viewmodel.DtrViewModel;
 import com.google.android.gms.common.ConnectionResult;
@@ -59,9 +61,10 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.OutputStream;
 import java.util.List;
 
 public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, ResultCallback, GoogleApiClient.OnConnectionFailedListener {
@@ -86,13 +89,22 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
     private SettingsClient settingsClient;
 
     private String filePath = "";
+    private String fileName = "";
+
+    private File timeLogFile;
+    private File screenShotFile;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        timeLogFile = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Timelogs");
+        screenShotFile = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Screenshot");
+
         dtrViewModel = ViewModelProviders.of(this).get(DtrViewModel.class);
+
         locationBroadcastReceiver = new LocationBroadcastReceiver(getContext());
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -156,6 +168,7 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
         dtrViewModel.getMutableUndertime().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
+
                 if (aBoolean.booleanValue()) {
                     Log.e("OK", "OK");
                     displayDialogUndertime();
@@ -171,17 +184,28 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                 displayAlreadyExistsDialog(s);
             }
         });
-        dtrViewModel.getMutableUploadError().observe(this, new Observer<String>() {
+
+
+        dtrViewModel.getUploadMessage().observe(this, new Observer<String>() {
             @Override
             public void onChanged(String s) {
-                Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_INDEFINITE);
-                snackbar.setAction("RETRY", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dtrViewModel.uploadLogs();
-                    }
-                });
+
+                if (!s.equalsIgnoreCase("Successfully uploaded") && !s.equalsIgnoreCase("Nothing to upload")) {
+                    Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setAction("RETRY", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dtrViewModel.uploadLogs();
+                        }
+                    });
+                    snackbar.show();
+                    return;
+                }
+
+                Snackbar snackbar = Snackbar.make(view.findViewById(R.id.root), s, Snackbar.LENGTH_SHORT);
+                snackbar.setText(s);
                 snackbar.show();
+
             }
         });
         locationBroadcastReceiver.getMutableLiveDataLocation().observe(this, new Observer<LocationIdentifier>() {
@@ -342,40 +366,54 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
 
             return;
         }
-        String imageTimeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-        File imageFolderFile = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 
+        if (locationBroadcastReceiver.getMutableLiveDataLocation().getValue().message.equalsIgnoreCase("Location/GPS acquired")) {
+            fileName = "timelog_" + DateTimeUtility.getFilenameDate("0618") + ".jpg";
+            File imageFile = new File(timeLogFile, fileName);
+            imageFile.getParentFile().mkdirs();
 
-        /*@Todo: not yet implemented*/
-        File imageFile = null;
-        try {
-            imageFile = File.createTempFile(dtrViewModel.getUser().id, ".jpg", imageFolderFile);
             filePath = imageFile.getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri uriImage = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) ?
+                    FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", imageFile) :
+                    Uri.fromFile(imageFile);
 
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri uriImage = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) ?
-                FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", imageFile) :
-                Uri.fromFile(imageFile);
-
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriImage);
-        if (cameraIntent.resolveActivity(getContext().getPackageManager()) != null) {
-            cameraIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            startActivityForResult(cameraIntent, 0);
-        } else {
-            Toast.makeText(getContext(), "No activity can handle this request", Toast.LENGTH_SHORT).show();
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriImage);
+            if (cameraIntent.resolveActivity(getContext().getPackageManager()) != null) {
+                cameraIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                startActivityForResult(cameraIntent, 0);
+            } else {
+                Toast.makeText(getContext(), "No activity can handle this request", Toast.LENGTH_SHORT).show();
+            }
+        } else { //Screenshots if no location is acquired
+            Bitmap bitmap = BitmapDecoder.screenShotView((Activity) getContext());
+            fileName = "screenshot_" + DateTimeUtility.getFilenameDate("0618") + ".jpg";
+            File imageFolderFile = new File(screenShotFile, fileName);
+            imageFolderFile.getParentFile().mkdirs();
+            try {
+                OutputStream fout = new FileOutputStream(imageFolderFile);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout);
+                fout.flush();
+                fout.close();
+            } catch (FileNotFoundException e) {
+                Log.e("FNOE", e.getMessage());
+            } catch (IOException e) {
+                Log.e("IOE", e.getMessage());
+            }
+            filePath = imageFolderFile.getAbsolutePath();
+            dtrViewModel.insertTimeLog(newTimelog());
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case 0:
+        Log.e("Resultcode", resultCode + " " + Activity.RESULT_OK);
+
+        switch (requestCode) {
+            case 0:
+                if (resultCode == Activity.RESULT_OK) {
                     Dialog dialog = new Dialog(getContext());
                     dialog.setContentView(R.layout.dialog_timelog_layout);
                     dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -383,22 +421,9 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                     TextView dialogLogStatus = dialog.findViewById(R.id.dialog_timelog_status);
                     TextView dialogLogTime = dialog.findViewById(R.id.dialog_timelog_time);
 
-                    String status = menuItem.getTitle().toString();
                     String currentTime = DateTimeUtility.getCurrentTime();
-                    dialogLogStatus.setText(status);
+                    dialogLogStatus.setText(dtrViewModel.getLiveDataMenuTitle().getValue());
                     dialogLogTime.setText(currentTime);
-
-                /*
-                @note: Uncomment to check if the picture really exists on this path
-
-                ImageView dialogLogSelfie = dialog.findViewById(R.id.dialog_timelog_selfie);
-
-                File file = new File(filePath);
-                if (file.exists()) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-                    dialogLogSelfie.setImageBitmap(bitmap);
-                }
-                */
 
                     WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
                     lp.copyFrom(dialog.getWindow().getAttributes());
@@ -408,21 +433,26 @@ public class DtrFragment extends Fragment implements GoogleApiClient.ConnectionC
                     dialog.getWindow().setAttributes(lp);
                     dialog.show();
 
-                    TimeLogModel timeLogModel = new TimeLogModel();
-                    timeLogModel.id = 0;
-                    timeLogModel.date = DateTimeUtility.getCurrentDate();
-                    timeLogModel.time = DateTimeUtility.getCurrentTime();
-                    timeLogModel.status = status;
-                    timeLogModel.latitude = locationBroadcastReceiver.getMutableLiveDataLocation().getValue().latitude;
-                    timeLogModel.longitude = locationBroadcastReceiver.getMutableLiveDataLocation().getValue().longitude;
-                    timeLogModel.filePath = filePath;
-                    dtrViewModel.insertTimeLog(timeLogModel);
+                    dtrViewModel.insertTimeLog(newTimelog());
                     break;
-            }
-        } else {
-            dispayActionCancelledDialog();
+                } else {
+                    dispayActionCancelledDialog();
+                }
         }
+    }
 
+    public TimeLogModel newTimelog() {
+        TimeLogModel timeLogModel = new TimeLogModel();
+        timeLogModel.id = 0;
+        timeLogModel.date = DateTimeUtility.getCurrentDate();
+        timeLogModel.time = DateTimeUtility.getCurrentTime();
+        timeLogModel.status = dtrViewModel.getLiveDataMenuTitle().getValue();
+        timeLogModel.latitude = locationBroadcastReceiver.getMutableLiveDataLocation().getValue().latitude;
+        timeLogModel.longitude = locationBroadcastReceiver.getMutableLiveDataLocation().getValue().longitude;
+        timeLogModel.fileName = fileName;
+        timeLogModel.filePath = filePath;
+        timeLogModel.uploaded = 0;
+        return timeLogModel;
     }
 
     @Override

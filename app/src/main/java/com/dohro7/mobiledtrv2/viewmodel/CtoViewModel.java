@@ -8,9 +8,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.dohro7.mobiledtrv2.model.CtoModel;
+import com.dohro7.mobiledtrv2.model.UserModel;
 import com.dohro7.mobiledtrv2.repository.CtoRepository;
+import com.dohro7.mobiledtrv2.repository.sharedpreference.UserSharedPreference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,17 +24,21 @@ import java.util.List;
 public class CtoViewModel extends AndroidViewModel {
     private CtoRepository ctoRepository;
     private LiveData<List<CtoModel>> listLiveData;
-    private String userid;
-    private final String USER_SHARED_PREF = "user_shared_pref";
+    private UserSharedPreference userSharedPreference;
+    private MutableLiveData<UserModel> userModel;
+    private LiveData<String> uploadMessage;
 
     public CtoViewModel(@NonNull Application application) {
         super(application);
         this.ctoRepository = new CtoRepository(application);
         this.listLiveData = ctoRepository.getListLiveData();
+        userSharedPreference = UserSharedPreference.getInstance(application);
+        userModel = userSharedPreference.getUserModel();
+        uploadMessage = ctoRepository.getMutableUploadError();
+    }
 
-        SharedPreferences sharedPreferences = application.getSharedPreferences(USER_SHARED_PREF, Context.MODE_PRIVATE);
-        userid = sharedPreferences.getString("userid", null);
-
+    public LiveData<String> getUploadMessage() {
+        return uploadMessage;
     }
 
     public LiveData<List<CtoModel>> getListLiveData() {
@@ -49,16 +56,16 @@ public class CtoViewModel extends AndroidViewModel {
     public void uploadCto() {
         try {
             JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userid", userModel.getValue().id);
             JSONArray cto = new JSONArray();
-            for (int i = 0; i < 10; i++) {
+            for (CtoModel ctoModel : listLiveData.getValue()) {
                 JSONObject daterange = new JSONObject();
-                daterange.put("userid", userid);
-                daterange.put("daterange", "02123123");
+                daterange.put("daterange", ctoModel.inclusive_date);
                 cto.put(daterange);
             }
 
-            jsonObject.put("cto", cto);
-            //ctoRepository.uploadCto(jsonObject);
+            jsonObject.put("cdo", cto);
+            ctoRepository.uploadCto(jsonObject);
             Log.e("upload", jsonObject.toString());
 
         } catch (JSONException e) {

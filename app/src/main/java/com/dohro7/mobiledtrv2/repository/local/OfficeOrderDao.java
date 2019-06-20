@@ -19,7 +19,9 @@ public interface OfficeOrderDao {
     @Delete
     void deleteOfficerOrder(OfficeOrderModel officeOrderModel);
 
-    @Query("SELECT * from so_table")
+    @Query("SELECT * FROM so_table")
     LiveData<List<OfficeOrderModel>> getOfficeOrder();
 
+    @Query("DELETE FROM so_table")
+    void deleteAllOfficerOrder();
 }

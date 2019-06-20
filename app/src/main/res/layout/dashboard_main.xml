@@ -13,7 +13,6 @@
         <include app:layout_constraintTop_toTopOf="parent " layout="@layout/toolbar" />
 
         <FrameLayout
-            android:background="#d7d7d7"
             android:id="@+id/dashboard_content"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
             app:layout_constraintBottom_toBottomOf="parent"

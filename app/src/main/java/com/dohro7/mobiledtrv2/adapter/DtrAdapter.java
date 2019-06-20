@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.model.DateLog;
 import com.dohro7.mobiledtrv2.model.TimeLogModel;
+import com.dohro7.mobiledtrv2.utility.DateTimeUtility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,30 +76,54 @@ public class DtrAdapter extends RecyclerView.Adapter<DtrAdapter.DtrViewHolder> {
          If it is undertime change it to red.
          NOTE: Top priority is the uploaded status.
          */
-        dtrViewHolder.dtr_date.setText(dtrLogs.get(position).date);
+        int year = Integer.parseInt(dtrLogs.get(position).date.split("-")[0]);
+        int month = Integer.parseInt(dtrLogs.get(position).date.split("-")[1]);
+        int day = Integer.parseInt(dtrLogs.get(position).date.split("-")[2]);
+        dtrViewHolder.dtr_date.setText(DateTimeUtility.getCurrentDateString(year, month, day));
+
+        Log.e("Date", dtrLogs.get(position).date);
         clearViews(dtrViewHolder);
 
         List<TimeLogModel> list = dtrLogs.get(position).timeLogModels;
         for (TimeLogModel timeLogModel : list) {
             if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHour() < 12) {
-                if (timeLogModel.getHour() > 7 && timeLogModel.getMinutes() > 0) dtrViewHolder.am_in.setTextColor(Color.RED);
+                if (timeLogModel.getHour() > 7 && timeLogModel.getMinutes() > 0)
+                    dtrViewHolder.am_in.setTextColor(Color.RED);
                 dtrViewHolder.am_in.setText(timeLogModel.time);
+
+                if (timeLogModel.uploaded == 1) {
+                    dtrViewHolder.am_in.setTextColor(Color.GREEN);
+                }
                 continue;
             }
             if (timeLogModel.status.equalsIgnoreCase("OUT") && timeLogModel.getHour() < 17 &&
                     dtrViewHolder.am_out.getText().toString().isEmpty() && !dtrViewHolder.am_in.getText().toString().isEmpty()) {
                 if (timeLogModel.getHour() < 12) dtrViewHolder.am_out.setTextColor(Color.RED);
                 dtrViewHolder.am_out.setText(timeLogModel.time);
+
+                if (timeLogModel.uploaded == 1) {
+                    dtrViewHolder.am_out.setTextColor(Color.GREEN);
+                }
+
                 continue;
             }
             if (timeLogModel.status.equalsIgnoreCase("IN") && timeLogModel.getHour() > 11) {
-                if (timeLogModel.getHour() > 12 && timeLogModel.getMinutes() > 0) dtrViewHolder.pm_in.setTextColor(Color.RED);
+                if (timeLogModel.getHour() > 12 && timeLogModel.getMinutes() > 0)
+                    dtrViewHolder.pm_in.setTextColor(Color.RED);
                 dtrViewHolder.pm_in.setText(timeLogModel.time);
+
+                if (timeLogModel.uploaded == 1) {
+                    dtrViewHolder.pm_in.setTextColor(Color.GREEN);
+                }
                 continue;
             }
             if (timeLogModel.status.equalsIgnoreCase("OUT")) {
                 if (timeLogModel.getHour() < 17) dtrViewHolder.pm_out.setTextColor(Color.RED);
                 dtrViewHolder.pm_out.setText(timeLogModel.time);
+
+                if (timeLogModel.uploaded == 1) {
+                    dtrViewHolder.pm_out.setTextColor(Color.GREEN);
+                }
                 continue;
             }
         }

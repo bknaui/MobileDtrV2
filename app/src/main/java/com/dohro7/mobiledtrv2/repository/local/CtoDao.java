@@ -19,6 +19,9 @@ public interface CtoDao {
     @Query("SELECT * FROM cto_tbl")
     LiveData<List<CtoModel>> getCto();
 
+    @Query("DELETE FROM cto_tbl")
+    void deleteAllCto();
+
     @Delete
     void deleteCto(CtoModel ctoModel);
 }

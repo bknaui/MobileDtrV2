@@ -2,10 +2,13 @@ package com.dohro7.mobiledtrv2.view.activity;
 
 import android.app.DownloadManager;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +20,14 @@ import androidx.lifecycle.ViewModelProviders;
 import com.dohro7.mobiledtrv2.R;
 import com.dohro7.mobiledtrv2.broadcastreceiver.DownloadBroadcastReceiver;
 import com.dohro7.mobiledtrv2.model.SoftwareUpdateModel;
+import com.dohro7.mobiledtrv2.utility.BitmapDecoder;
 import com.dohro7.mobiledtrv2.viewmodel.SoftwareUpdateViewModel;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class SoftwareUpdateActivity extends AppCompatActivity {
     private SoftwareUpdateViewModel softwareUpdateViewModel;
@@ -26,6 +36,28 @@ public class SoftwareUpdateActivity extends AppCompatActivity {
     private CardView newContainer;
     private Group progressContainer;
     private ProgressBar downloadProgressbar;
+
+    //Uncomment if you want to perform screen shot
+    /*@Override
+    public void onBackPressed() {
+        File screenShotFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Screenshot");
+        Bitmap bitmap = BitmapDecoder.screenShotView(this);
+        String fileName = "screenshot_software_update_updated.jpg";
+        File imageFolderFile = new File(screenShotFile, fileName);
+        imageFolderFile.getParentFile().mkdirs();
+        try {
+            OutputStream fout = new FileOutputStream(imageFolderFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout);
+            fout.flush();
+            fout.close();
+        } catch (FileNotFoundException e) {
+            Log.e("FNOE", e.getMessage());
+        } catch (IOException e) {
+            Log.e("IOE", e.getMessage());
+        }
+        Toast.makeText(this, "Screen captured", Toast.LENGTH_SHORT).show();
+    }
+    */
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

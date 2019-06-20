@@ -26,5 +26,5 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textColor="#000"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/cto_date_label" />
+        app:layout_constraintTop_toBottomOf="@+id/so_date_label" />
 </androidx.constraintlayout.widget.ConstraintLayout>
